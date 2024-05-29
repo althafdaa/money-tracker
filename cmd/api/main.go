@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"money-tracker/internal/auth"
 	"money-tracker/internal/config"
+	"money-tracker/internal/router"
 	"money-tracker/internal/server"
 	"os"
 	"strconv"
@@ -13,10 +15,13 @@ import (
 func main() {
 
 	server := server.New()
+	cfg := config.NewConfig()
+	googleCfg := cfg.GoogleOauthConfig()
+	authService := auth.NewAuthService(googleCfg)
+	authHandler := auth.NewAuthHandler(googleCfg, authService)
+	routes := router.NewHTTP(authHandler)
+	routes.RegisterFiberRoutes(server.App)
 
-	config.GoogleConfig()
-
-	server.RegisterFiberRoutes()
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	err := server.Listen(fmt.Sprintf(":%d", port))
 	if err != nil {
