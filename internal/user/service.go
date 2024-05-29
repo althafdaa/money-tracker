@@ -1,0 +1,59 @@
+package user
+
+import (
+	"money-tracker/internal/database/entity"
+	"money-tracker/internal/domain"
+	"money-tracker/internal/dto"
+	"money-tracker/internal/utils"
+
+	"golang.org/x/crypto/bcrypt"
+)
+
+type UserService interface {
+	CheckEmail(email string) (*entity.User, *domain.Error)
+	CreateUserFromGoogle(body *dto.GoogleUserData) (*entity.User, *domain.Error)
+}
+
+type userService struct {
+	userRepository UserRepository
+}
+
+// CreateUser implements UserService.
+func (u *userService) CreateUserFromGoogle(body *dto.GoogleUserData) (*entity.User, *domain.Error) {
+	randString := utils.GenerateRandomCode(20)
+	hash, bcryptErr := bcrypt.GenerateFromPassword([]byte(randString), bcrypt.DefaultCost)
+	if bcryptErr != nil {
+		return nil, &domain.Error{
+			Code: 500,
+			Err:  bcryptErr,
+		}
+	}
+
+	user, err := u.userRepository.CreateOne(entity.User{
+		Name:              body.Name,
+		Email:             body.Email,
+		ProfilePictureUrl: body.Picture,
+		Hash:              string(hash),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// CheckEmail implements UserService.
+func (u *userService) CheckEmail(email string) (*entity.User, *domain.Error) {
+	user, err := u.userRepository.GetOneUserByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func NewUserService(userRepository UserRepository) UserService {
+	return &userService{
+		userRepository,
+	}
+}

@@ -4,6 +4,7 @@ create table
         "name" varchar(255) not null,
         "email" varchar(255) not null unique,
         "hash" varchar(255) not null,
+        "profile_picutre_url" varchar(255),
         "created_at" timestamp DEFAULT 'now()' NOT NULL,
         "updated_at" timestamp DEFAULT 'now()' NOT NULL,
         "deleted_at" timestamp

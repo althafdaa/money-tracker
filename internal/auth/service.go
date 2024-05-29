@@ -4,21 +4,68 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
+	refreshtoken "money-tracker/internal/refresh_token"
+	"money-tracker/internal/utils"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/oauth2"
 )
 
 type AuthService interface {
 	ExchangeToken(code string) (*oauth2.Token, *domain.Error)
 	ParseTokenToUser(token string) (*dto.GoogleUserData, *domain.Error)
+	GenerateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error)
 }
 
 type authService struct {
-	googleConfig *oauth2.Config
+	googleConfig        *oauth2.Config
+	refreshTokenService refreshtoken.RefreshTokenService
+}
+
+// GenerateToken implements AuthService.
+func (a *authService) GenerateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error) {
+	secret := os.Getenv("JWT_SECRET")
+	expiredTime := time.Now().Add(time.Minute * 5)
+	claims := &dto.ATClaims{
+		ID:    user.ID,
+		Email: user.Email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expiredTime),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	accessToken, _ := token.SignedString(secret)
+
+	expiredRefreshTime := time.Now().Add(time.Hour * 24 * 7)
+	refreshToken := utils.GenerateRandomCode(32)
+
+	_, err := a.refreshTokenService.GenerateRefreshToken(&entity.RefreshToken{
+		UserID:       user.ID,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiredAt:    &expiredRefreshTime,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.AuthResponse{
+		AccessToken:           accessToken,
+		TokenType:             "Bearer",
+		RefreshToken:          refreshToken,
+		AccessTokenExpiresIn:  int(expiredTime.Unix()),
+		RefreshTokenExpiresIn: int(expiredRefreshTime.Unix()),
+	}, nil
+
 }
 
 // ParseTokenToUser implements AuthService.
@@ -61,8 +108,9 @@ func (a *authService) ExchangeToken(code string) (*oauth2.Token, *domain.Error) 
 	return token, nil
 }
 
-func NewAuthService(googleConfig *oauth2.Config) AuthService {
+func NewAuthService(googleConfig *oauth2.Config, refreshTokenService refreshtoken.RefreshTokenService) AuthService {
 	return &authService{
 		googleConfig,
+		refreshTokenService,
 	}
 }

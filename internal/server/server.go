@@ -3,13 +3,15 @@ package server
 import (
 	"money-tracker/internal/database"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
 type FiberServer struct {
 	*fiber.App
-	db *gorm.DB
+	Db        *gorm.DB
+	Validator *validator.Validate
 }
 
 func New() *FiberServer {
@@ -18,7 +20,8 @@ func New() *FiberServer {
 			ServerHeader: "money-tracker",
 			AppName:      "money-tracker",
 		}),
-		db: database.New(),
+		Db:        database.New(),
+		Validator: validator.New(),
 	}
 
 	return server

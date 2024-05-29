@@ -4,21 +4,30 @@ import (
 	"fmt"
 	"money-tracker/internal/auth"
 	"money-tracker/internal/config"
+	refreshtoken "money-tracker/internal/refresh_token"
 	"money-tracker/internal/router"
 	"money-tracker/internal/server"
+	"money-tracker/internal/user"
 	"os"
 	"strconv"
 
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
 
 	server := server.New()
+	server.App.Use(cors.New())
 	cfg := config.NewConfig()
 	googleCfg := cfg.GoogleOauthConfig()
-	authService := auth.NewAuthService(googleCfg)
-	authHandler := auth.NewAuthHandler(googleCfg, authService)
+
+	refreshTokenRepo := refreshtoken.NewRefreshTokenRepository(server.Db)
+	refreshTokenService := refreshtoken.NewRefreshTokenService(refreshTokenRepo)
+	userRepo := user.NewUserRepository(server.Db)
+	userService := user.NewUserService(userRepo)
+	authService := auth.NewAuthService(googleCfg, refreshTokenService)
+	authHandler := auth.NewAuthHandler(googleCfg, authService, server.Validator, userService)
 	routes := router.NewHTTP(authHandler)
 	routes.RegisterFiberRoutes(server.App)
 

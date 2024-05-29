@@ -1,0 +1,48 @@
+package refreshtoken
+
+import (
+	"money-tracker/internal/database/entity"
+	"money-tracker/internal/domain"
+
+	"gorm.io/gorm"
+)
+
+type RefreshTokenRepository interface {
+	CreateOne(refresh entity.RefreshToken) (*entity.RefreshToken, *domain.Error)
+	DeleteByToken(token string) *domain.Error
+}
+type refreshTokenRepository struct {
+	db *gorm.DB
+}
+
+// DeleteByToken implements RefreshTokenRepository.
+func (r *refreshTokenRepository) DeleteByToken(token string) *domain.Error {
+	res := r.db.Exec("delete from refresh_token where refresh_token = ?", token)
+
+	if res.Error != nil {
+		return &domain.Error{
+			Code: 500,
+			Err:  res.Error,
+		}
+	}
+
+	return nil
+}
+
+// CreateOne implements RefreshTokenRepository.
+func (r *refreshTokenRepository) CreateOne(refresh entity.RefreshToken) (*entity.RefreshToken, *domain.Error) {
+	res := r.db.Raw("insert into refresh_token (access_token, refresh_token, user_id, expired_at) values (?, ?, ?, ?) returning *", refresh.AccessToken, refresh.RefreshToken, refresh.UserID, refresh.ExpiredAt).Scan(&refresh)
+
+	if res.Error != nil {
+		return nil, &domain.Error{
+			Code: 500,
+			Err:  res.Error,
+		}
+	}
+
+	return &refresh, nil
+}
+
+func NewRefreshTokenRepository(db *gorm.DB) RefreshTokenRepository {
+	return &refreshTokenRepository{db}
+}
