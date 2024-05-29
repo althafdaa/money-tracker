@@ -11,7 +11,7 @@ func (s *FiberServer) RegisterFiberRoutes() {
 
 func (s *FiberServer) HelloWorldHandler(c *fiber.Ctx) error {
 	resp := fiber.Map{
-		"message": "Hello Althaf",
+		"message": "Hello Check",
 	}
 
 	return c.JSON(resp)
