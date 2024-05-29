@@ -1,15 +1,15 @@
 package server
 
 import (
-	"github.com/gofiber/fiber/v2"
-
 	"money-tracker/internal/database"
+
+	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 type FiberServer struct {
 	*fiber.App
-
-	db database.Service
+	db *gorm.DB
 }
 
 func New() *FiberServer {
@@ -18,7 +18,6 @@ func New() *FiberServer {
 			ServerHeader: "money-tracker",
 			AppName:      "money-tracker",
 		}),
-
 		db: database.New(),
 	}
 
