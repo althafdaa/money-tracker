@@ -9,14 +9,29 @@ import (
 
 type RefreshTokenRepository interface {
 	CreateOne(refresh entity.RefreshToken) (*entity.RefreshToken, *domain.Error)
-	DeleteByToken(token string) *domain.Error
+	DeleteByRefreshToken(token string) *domain.Error
+	DeleteByAccessToken(token string) *domain.Error
 }
 type refreshTokenRepository struct {
 	db *gorm.DB
 }
 
+// DeleteByAccessToken implements RefreshTokenRepository.
+func (r *refreshTokenRepository) DeleteByAccessToken(token string) *domain.Error {
+	res := r.db.Exec("delete from refresh_token where access_token = ?", token)
+
+	if res.Error != nil {
+		return &domain.Error{
+			Code: 500,
+			Err:  res.Error,
+		}
+	}
+
+	return nil
+}
+
 // DeleteByToken implements RefreshTokenRepository.
-func (r *refreshTokenRepository) DeleteByToken(token string) *domain.Error {
+func (r *refreshTokenRepository) DeleteByRefreshToken(token string) *domain.Error {
 	res := r.db.Exec("delete from refresh_token where refresh_token = ?", token)
 
 	if res.Error != nil {

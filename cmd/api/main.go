@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"money-tracker/internal/auth"
 	"money-tracker/internal/config"
+	"money-tracker/internal/middleware"
 	refreshtoken "money-tracker/internal/refresh_token"
 	"money-tracker/internal/router"
 	"money-tracker/internal/server"
@@ -22,13 +23,14 @@ func main() {
 	cfg := config.NewConfig()
 	googleCfg := cfg.GoogleOauthConfig()
 
+	authMiddleware := middleware.NewAuthMiddleware()
 	refreshTokenRepo := refreshtoken.NewRefreshTokenRepository(server.Db)
 	refreshTokenService := refreshtoken.NewRefreshTokenService(refreshTokenRepo)
 	userRepo := user.NewUserRepository(server.Db)
 	userService := user.NewUserService(userRepo)
 	authService := auth.NewAuthService(googleCfg, refreshTokenService)
 	authHandler := auth.NewAuthHandler(googleCfg, authService, server.Validator, userService)
-	routes := router.NewHTTP(authHandler)
+	routes := router.NewHTTP(authHandler, authMiddleware)
 	routes.RegisterFiberRoutes(server.App)
 
 	port, _ := strconv.Atoi(os.Getenv("PORT"))

@@ -34,8 +34,8 @@ func (a *authService) GenerateNewToken(user *entity.User) (*dto.AuthResponse, *d
 	secret := os.Getenv("JWT_SECRET")
 	expiredTime := time.Now().Add(time.Minute * 5)
 	claims := &dto.ATClaims{
-		ID:    user.ID,
-		Email: user.Email,
+		UserID: user.ID,
+		Email:  user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiredTime),
 		},

@@ -18,8 +18,8 @@ type AuthGoogleBody struct {
 }
 
 type ATClaims struct {
-	ID    int64
-	Email string
+	UserID int64
+	Email  string
 	jwt.RegisteredClaims
 }
 
