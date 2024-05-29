@@ -42,7 +42,15 @@ func (a *authService) GenerateNewToken(user *entity.User) (*dto.AuthResponse, *d
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	accessToken, _ := token.SignedString(secret)
+	accessToken, signError := token.SignedString([]byte(secret))
+
+	if signError != nil {
+		return nil, &domain.Error{
+			Err:  signError,
+			Code: fiber.StatusInternalServerError,
+		}
+
+	}
 
 	expiredRefreshTime := time.Now().Add(time.Hour * 24 * 7)
 	refreshToken := utils.GenerateRandomCode(32)

@@ -1,12 +1,14 @@
 package user
 
 import (
+	"errors"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
 	"money-tracker/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type UserService interface {
@@ -47,6 +49,9 @@ func (u *userService) CreateUserFromGoogle(body *dto.GoogleUserData) (*entity.Us
 func (u *userService) CheckEmail(email string) (*entity.User, *domain.Error) {
 	user, err := u.userRepository.GetOneUserByEmail(email)
 	if err != nil {
+		if errors.Is(err.Err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return user, nil

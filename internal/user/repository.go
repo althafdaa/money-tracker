@@ -18,7 +18,7 @@ type userRepository struct {
 
 // CreateOne implements UserRepository.
 func (u *userRepository) CreateOne(user entity.User) (*entity.User, *domain.Error) {
-	res := u.db.Raw("insert into user (email, name, profile_picture_url, hash) values (?, ?, ?, ?) returning *", user.Email, user.Name, user.ProfilePictureUrl, user.Hash).Scan(&user)
+	res := u.db.Raw("insert into user_data (email, name, profile_picture_url, hash) values (?, ?, ?, ?) returning *", user.Email, user.Name, user.ProfilePictureUrl, user.Hash).Scan(&user)
 
 	if res.Error != nil {
 		return nil, &domain.Error{
@@ -33,7 +33,7 @@ func (u *userRepository) CreateOne(user entity.User) (*entity.User, *domain.Erro
 // GetUserByEmail implements UserRepository.
 func (u *userRepository) GetOneUserByEmail(email string) (*entity.User, *domain.Error) {
 	var user *entity.User
-	res := u.db.Raw("select * from user where email = ? limit 1", email).First(&user)
+	res := u.db.Raw("select * from user_data where email = ? limit 1", email).First(&user)
 
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
