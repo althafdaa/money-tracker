@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"money-tracker/internal/config"
 	"money-tracker/internal/server"
 	"os"
 	"strconv"
@@ -12,6 +13,8 @@ import (
 func main() {
 
 	server := server.New()
+
+	config.GoogleConfig()
 
 	server.RegisterFiberRoutes()
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
