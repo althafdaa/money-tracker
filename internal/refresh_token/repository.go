@@ -9,11 +9,27 @@ import (
 
 type RefreshTokenRepository interface {
 	CreateOne(refresh entity.RefreshToken) (*entity.RefreshToken, *domain.Error)
+	GetOneByRefreshToken(token string) (*entity.RefreshToken, *domain.Error)
 	DeleteByRefreshToken(token string) *domain.Error
 	DeleteByAccessToken(token string) *domain.Error
 }
 type refreshTokenRepository struct {
 	db *gorm.DB
+}
+
+// GetOneByRefreshToken implements RefreshTokenRepository.
+func (r *refreshTokenRepository) GetOneByRefreshToken(token string) (*entity.RefreshToken, *domain.Error) {
+	var refresh entity.RefreshToken
+	res := r.db.Raw("select * from refresh_token where refresh_token = ?", token).First(&refresh)
+
+	if res.Error != nil {
+		return nil, &domain.Error{
+			Code: 500,
+			Err:  res.Error,
+		}
+	}
+
+	return &refresh, nil
 }
 
 // DeleteByAccessToken implements RefreshTokenRepository.

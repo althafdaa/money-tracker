@@ -13,11 +13,21 @@ import (
 
 type UserService interface {
 	CheckEmail(email string) (*entity.User, *domain.Error)
+	GetOneUserFromID(id int) (*entity.User, *domain.Error)
 	CreateUserFromGoogle(body *dto.GoogleUserData) (*entity.User, *domain.Error)
 }
 
 type userService struct {
 	userRepository UserRepository
+}
+
+// GetOneUserFromID implements UserService.
+func (u *userService) GetOneUserFromID(id int) (*entity.User, *domain.Error) {
+	res, err := u.userRepository.GetOneUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 // CreateUser implements UserService.

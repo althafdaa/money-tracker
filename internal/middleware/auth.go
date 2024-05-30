@@ -13,9 +13,6 @@ import (
 type AuthMiddleware struct{}
 
 func (a *AuthMiddleware) Init(c *fiber.Ctx) error {
-	// Get bearer tokenString
-	// Check if tokenString is valid
-	// If tokenString is valid, set user to context
 	tokenString := c.Get("Authorization")
 	secret := os.Getenv("JWT_SECRET")
 	if tokenString == "" {

@@ -1,1 +1,1 @@
-drop table if exists "category";
+drop table if exists category;

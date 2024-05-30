@@ -3,8 +3,10 @@ package auth
 import (
 	"errors"
 	"money-tracker/internal/dto"
+	refreshtoken "money-tracker/internal/refresh_token"
 	"money-tracker/internal/user"
 	"os"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -12,10 +14,11 @@ import (
 )
 
 type AuthHandler struct {
-	googleConfig *oauth2.Config
-	authService  AuthService
-	validator    *validator.Validate
-	userService  user.UserService
+	googleConfig   *oauth2.Config
+	authService    AuthService
+	validator      *validator.Validate
+	userService    user.UserService
+	refreshService refreshtoken.RefreshTokenService
 }
 
 func (a *AuthHandler) GoogleLogin(c *fiber.Ctx) error {
@@ -130,11 +133,54 @@ func (a *AuthHandler) AuthGoogle(c *fiber.Ctx) error {
 
 }
 
+func (a *AuthHandler) RefreshToken(c *fiber.Ctx) error {
+	refreshToken := c.Get("Authorization")
+	refreshToken = strings.TrimPrefix(refreshToken, "Bearer ")
+
+	if refreshToken == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "REFRESH_TOKEN_INVALID",
+			"code":  fiber.StatusBadRequest})
+	}
+
+	refresh, err := a.refreshService.CheckRefreshTokenValidity(refreshToken)
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"error": err.Err,
+			"code":  err.Code,
+		})
+	}
+
+	user, err := a.userService.GetOneUserFromID(int(refresh.UserID))
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"error": err.Err,
+			"code":  err.Code,
+		})
+	}
+
+	newToken, err := a.authService.GenerateNewToken(user)
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"error": err.Err,
+			"code":  err.Code,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"code": fiber.StatusOK,
+		"data": newToken,
+	})
+}
+
 func NewAuthHandler(
 	googleConfig *oauth2.Config,
 	authService AuthService,
 	validator *validator.Validate,
 	userService user.UserService,
+	refreshTokenService refreshtoken.RefreshTokenService,
 ) *AuthHandler {
-	return &AuthHandler{googleConfig, authService, validator, userService}
+	return &AuthHandler{googleConfig, authService, validator, userService, refreshTokenService}
 }

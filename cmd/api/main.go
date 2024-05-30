@@ -24,12 +24,16 @@ func main() {
 	googleCfg := cfg.GoogleOauthConfig()
 
 	authMiddleware := middleware.NewAuthMiddleware()
+
 	refreshTokenRepo := refreshtoken.NewRefreshTokenRepository(server.Db)
 	refreshTokenService := refreshtoken.NewRefreshTokenService(refreshTokenRepo)
+
 	userRepo := user.NewUserRepository(server.Db)
 	userService := user.NewUserService(userRepo)
+
 	authService := auth.NewAuthService(googleCfg, refreshTokenService)
-	authHandler := auth.NewAuthHandler(googleCfg, authService, server.Validator, userService)
+	authHandler := auth.NewAuthHandler(googleCfg, authService, server.Validator, userService, refreshTokenService)
+
 	routes := router.NewHTTP(authHandler, authMiddleware)
 	routes.RegisterFiberRoutes(server.App)
 
