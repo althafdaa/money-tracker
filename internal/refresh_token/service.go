@@ -12,9 +12,19 @@ import (
 type RefreshTokenService interface {
 	GenerateRefreshToken(*entity.RefreshToken) (*entity.RefreshToken, *domain.Error)
 	CheckRefreshTokenValidity(string) (*entity.RefreshToken, *domain.Error)
+	LogoutRefreshToken(string) *domain.Error
 }
 type refreshTokenService struct {
 	refreshTokenRepository RefreshTokenRepository
+}
+
+// LogoutRefreshToken implements RefreshTokenService.
+func (r *refreshTokenService) LogoutRefreshToken(accessToken string) *domain.Error {
+	err := r.refreshTokenRepository.DeleteByAccessToken(accessToken)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetOneByRefreshToken implements RefreshTokenService.

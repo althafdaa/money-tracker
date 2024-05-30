@@ -175,6 +175,24 @@ func (a *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	})
 }
 
+func (a *AuthHandler) Logout(c *fiber.Ctx) error {
+	accToken := c.Get("Authorization")
+	accToken = strings.TrimPrefix(accToken, "Bearer ")
+
+	err := a.refreshService.LogoutRefreshToken(accToken)
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"error": err.Err,
+			"code":  err.Code,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"code": fiber.StatusOK,
+		"data": "LOGOUT_SUCCESS",
+	})
+}
+
 func NewAuthHandler(
 	googleConfig *oauth2.Config,
 	authService AuthService,
