@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"money-tracker/internal/auth"
+	"money-tracker/internal/category"
 	"money-tracker/internal/config"
 	"money-tracker/internal/middleware"
 	refreshtoken "money-tracker/internal/refresh_token"
@@ -25,6 +26,10 @@ func main() {
 
 	authMiddleware := middleware.NewAuthMiddleware()
 
+	categoryRepo := category.NewCategoryRepository(server.Db)
+	categoryService := category.NewCategoryService(categoryRepo)
+	categoryHandler := category.NewCategoryHandler(categoryService)
+
 	refreshTokenRepo := refreshtoken.NewRefreshTokenRepository(server.Db)
 	refreshTokenService := refreshtoken.NewRefreshTokenService(refreshTokenRepo)
 
@@ -34,7 +39,7 @@ func main() {
 	authService := auth.NewAuthService(googleCfg, refreshTokenService)
 	authHandler := auth.NewAuthHandler(googleCfg, authService, server.Validator, userService, refreshTokenService)
 
-	routes := router.NewHTTP(authHandler, authMiddleware)
+	routes := router.NewHTTP(authHandler, categoryHandler, authMiddleware)
 	routes.RegisterFiberRoutes(server.App)
 
 	port, _ := strconv.Atoi(os.Getenv("PORT"))

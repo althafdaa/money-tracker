@@ -2,6 +2,7 @@ package router
 
 import (
 	"money-tracker/internal/auth"
+	"money-tracker/internal/category"
 	"money-tracker/internal/middleware"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,6 +11,7 @@ import (
 type HTTP struct {
 	auth           *auth.AuthHandler
 	authMiddleware *middleware.AuthMiddleware
+	category       *category.CategoryHandler
 }
 
 func (s *HTTP) RegisterFiberRoutes(app *fiber.App) {
@@ -27,14 +29,19 @@ func (s *HTTP) RegisterFiberRoutes(app *fiber.App) {
 	auth.Get("/google", s.auth.GoogleLogin)
 	auth.Get("/refresh", s.auth.RefreshToken)
 	auth.Post("/google/callback", s.auth.AuthGoogle)
+
+	category := v1.Group("/category", s.authMiddleware.Init)
+	category.Post("/", s.category.CreateCategory)
 }
 
 func NewHTTP(
 	auth *auth.AuthHandler,
+	category *category.CategoryHandler,
 	authMiddleware *middleware.AuthMiddleware,
 ) *HTTP {
 	return &HTTP{
 		auth,
 		authMiddleware,
+		category,
 	}
 }
