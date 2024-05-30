@@ -6,6 +6,7 @@ import (
 	"money-tracker/internal/category"
 	"money-tracker/internal/category/subcategory"
 	"money-tracker/internal/config"
+	"money-tracker/internal/database/seeder"
 	"money-tracker/internal/middleware"
 	refreshtoken "money-tracker/internal/refresh_token"
 	registervalidator "money-tracker/internal/register_validation"
@@ -35,6 +36,11 @@ func main() {
 	}))
 	cfg := config.NewConfig()
 	googleCfg := cfg.GoogleOauthConfig()
+
+	seedErr := seeder.NewSeeder(server.Db).SeedEverything()
+	if seedErr != nil {
+		panic(fmt.Sprintf("cannot seed category: %s", seedErr))
+	}
 
 	registervalidator.NewValidationRegiser(server.Validator).RegisterCategoryType()
 

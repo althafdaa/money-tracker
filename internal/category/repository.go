@@ -21,7 +21,7 @@ type categoryRepository struct {
 // CreateOne implements CategoryRepository.
 func (c *categoryRepository) CreateOne(body *dto.CreateCategoryRepoBody) (*entity.Category, *domain.Error) {
 	var category entity.Category
-	res := c.db.Exec("insert into category (name, slug) values (?, ?) returning *", body.Name, body.Slug).Scan(&category)
+	res := c.db.Exec("insert into category (name, slug, type) values (?, ?, ?) returning *", body.Name, body.Slug, body.Type).Scan(&category)
 
 	if res.Error != nil {
 		return nil, &domain.Error{
