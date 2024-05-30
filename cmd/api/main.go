@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"money-tracker/internal/auth"
 	"money-tracker/internal/category"
+	"money-tracker/internal/category/subcategory"
 	"money-tracker/internal/config"
 	"money-tracker/internal/middleware"
 	refreshtoken "money-tracker/internal/refresh_token"
@@ -26,9 +27,12 @@ func main() {
 
 	authMiddleware := middleware.NewAuthMiddleware()
 
+	subcategoryRepo := subcategory.NewSubcategoryRepository(server.Db)
+	subcategoryService := subcategory.NewSubcategoryService(subcategoryRepo)
+
 	categoryRepo := category.NewCategoryRepository(server.Db)
 	categoryService := category.NewCategoryService(categoryRepo)
-	categoryHandler := category.NewCategoryHandler(categoryService)
+	categoryHandler := category.NewCategoryHandler(categoryService, subcategoryService, server.Validator)
 
 	refreshTokenRepo := refreshtoken.NewRefreshTokenRepository(server.Db)
 	refreshTokenService := refreshtoken.NewRefreshTokenService(refreshTokenRepo)
