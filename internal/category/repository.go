@@ -4,6 +4,7 @@ import (
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -34,12 +35,13 @@ func (c *categoryRepository) CreateOne(body *dto.CategoryBody) (*entity.Category
 
 // DeleteOne implements CategoryRepository.
 func (c *categoryRepository) DeleteOne(id int) *domain.Error {
-	res := c.db.Exec("delete from category where id = ?", id)
+	now := time.Now()
+	err := c.db.Raw("update category set deleted_at = ? where id = ?", &now, id).Error
 
-	if res.Error != nil {
+	if err != nil {
 		return &domain.Error{
 			Code: 500,
-			Err:  res.Error,
+			Err:  err,
 		}
 	}
 	return nil

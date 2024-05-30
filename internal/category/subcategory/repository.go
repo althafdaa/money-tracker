@@ -4,6 +4,7 @@ import (
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -34,7 +35,8 @@ func (s *subcategoryRepository) CreateOne(body *dto.SubcategoryBody) (*entity.Su
 
 // DeleteById implements SubcategoryRepository.
 func (s *subcategoryRepository) DeleteById(id int) *domain.Error {
-	err := s.db.Exec("delete from subcategory where id = ?", id).Error
+	now := time.Now()
+	err := s.db.Exec("update subcategory set deleted_at = ? where id = ?", &now, id).Error
 
 	if err != nil {
 		return &domain.Error{

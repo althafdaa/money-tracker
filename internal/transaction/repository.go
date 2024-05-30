@@ -3,6 +3,7 @@ package transaction
 import (
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -30,7 +31,9 @@ func (t *transactionRepository) CreateTransaction(transaction *entity.Transactio
 
 // DeleteTransactionByID implements TransactionRepository.
 func (t *transactionRepository) DeleteTransactionByID(transactionID int64) *domain.Error {
-	err := t.db.Exec("delete from \"transaction\" where id = ?", transactionID).Error
+	now := time.Now()
+
+	err := t.db.Exec("update transaction set deleted_at = ? where id = ?", &now, transactionID).Error
 	if err != nil {
 		return &domain.Error{Code: 500, Err: err}
 	}
