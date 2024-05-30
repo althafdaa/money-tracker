@@ -9,8 +9,8 @@ import (
 
 type SubcategoryService interface {
 	CreateSubcategory(body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error)
-	DeleteSubcategoryById(id int) *domain.Error
-	UpdateSubcategory(id int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error)
+	DeleteSubcategoryByID(id int) *domain.Error
+	UpdateSubcategoryByID(id int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error)
 }
 type subcategoryService struct {
 	subcategoryRepository SubcategoryRepository
@@ -41,8 +41,8 @@ func (s *subcategoryService) CreateSubcategory(body *dto.SubcategoryBody) (*enti
 }
 
 // DeleteSubcategoryById implements SubcategoryService.
-func (s *subcategoryService) DeleteSubcategoryById(id int) *domain.Error {
-	err := s.subcategoryRepository.DeleteById(id)
+func (s *subcategoryService) DeleteSubcategoryByID(id int) *domain.Error {
+	err := s.subcategoryRepository.DeleteByID(id)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func (s *subcategoryService) DeleteSubcategoryById(id int) *domain.Error {
 }
 
 // UpdateSubcategory implements SubcategoryService.
-func (s *subcategoryService) UpdateSubcategory(id int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error) {
+func (s *subcategoryService) UpdateSubcategoryByID(id int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error) {
 	updatedSlug, err := utils.Slugify(body.Name)
 
 	if err != nil {

@@ -35,10 +35,15 @@ func (s *HTTP) RegisterFiberRoutes(app *fiber.App) {
 	category := v1.Group("/category", s.authMiddleware.Init)
 	category.Post("/", s.category.CreateCategory)
 	category.Post("/subcategory", s.category.CreateSubcategory)
+	category.Delete("/subcategory/:id", s.category.DeleteSubcategoryByID)
+	category.Put("/subcategory/:id", s.category.UpdateSubcategoryByID)
 
 	transaction := v1.Group("/transaction", s.authMiddleware.Init)
-	transaction.Post("/income", s.transaction.CreateOneIncomeTransaction)
-	transaction.Post("/expense", s.transaction.CreateOneExpenseTransaction)
+	transaction.Post("/", s.transaction.CreateTransaction)
+	transaction.Delete("/:id", s.transaction.DeleteTransactionByID)
+	transaction.Put("/:id", s.transaction.UpdateTransactionByID)
+	transaction.Get("/:id", s.transaction.GetOneTransactionByID)
+	transaction.Get("/", s.transaction.GetAllTransactions)
 }
 
 func NewHTTP(

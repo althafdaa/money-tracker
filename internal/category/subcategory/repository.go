@@ -11,7 +11,7 @@ import (
 
 type SubcategoryRepository interface {
 	CreateOne(body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error)
-	DeleteById(id int) *domain.Error
+	DeleteByID(id int) *domain.Error
 	UpdateOne(id int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error)
 }
 type subcategoryRepository struct {
@@ -34,7 +34,7 @@ func (s *subcategoryRepository) CreateOne(body *dto.SubcategoryBody) (*entity.Su
 }
 
 // DeleteById implements SubcategoryRepository.
-func (s *subcategoryRepository) DeleteById(id int) *domain.Error {
+func (s *subcategoryRepository) DeleteByID(id int) *domain.Error {
 	now := time.Now()
 	err := s.db.Exec("update subcategory set deleted_at = ? where id = ?", &now, id).Error
 

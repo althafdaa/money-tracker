@@ -4,6 +4,7 @@ import (
 	"errors"
 	"money-tracker/internal/category/subcategory"
 	"money-tracker/internal/dto"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -91,6 +92,76 @@ func (h *CategoryHandler) CreateSubcategory(c *fiber.Ctx) error {
 		"code": fiber.StatusCreated,
 		"data": res,
 	})
+}
+
+func (h *CategoryHandler) DeleteSubcategoryByID(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": errors.New("INVALID_REQUEST_PARAMS"),
+			"code":  fiber.ErrBadRequest,
+		})
+	}
+
+	newErr := h.subcategoryService.DeleteSubcategoryByID(id)
+
+	if newErr != nil {
+		return c.Status(newErr.Code).JSON(fiber.Map{
+			"error": newErr.Err.Error(),
+			"code":  fiber.ErrInternalServerError,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"code": fiber.StatusOK,
+	})
+}
+
+func (h *CategoryHandler) UpdateSubcategoryByID(c *fiber.Ctx) error {
+	type RequestBody struct {
+		Name string `json:"name" validate:"required,min=3,max=20"`
+	}
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": errors.New("INVALID_REQUEST_PARAMS"),
+			"code":  fiber.ErrBadRequest,
+		})
+	}
+
+	var body RequestBody
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": errors.New("INVALID_REQUEST_BODY"),
+			"code":  fiber.ErrBadRequest,
+		})
+	}
+
+	err = h.validator.Struct(body)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+			"code":  fiber.ErrBadRequest,
+		})
+	}
+
+	res, resErr := h.subcategoryService.UpdateSubcategoryByID(id, &dto.SubcategoryBody{
+		Name: body.Name,
+	})
+
+	if resErr != nil {
+		return c.Status(resErr.Code).JSON(fiber.Map{
+			"error": resErr.Err.Error(),
+			"code":  resErr.Code,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"code": fiber.StatusOK,
+		"data": res,
+	})
+
 }
 
 func NewCategoryHandler(

@@ -154,7 +154,7 @@ func (a *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	refresh, err := a.refreshService.CheckRefreshTokenValidity(refreshToken)
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"error": err.Err,
+			"error": err.Err.Error(),
 			"code":  err.Code,
 		})
 	}
@@ -163,7 +163,7 @@ func (a *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"error": err.Err,
+			"error": err.Err.Error(),
 			"code":  err.Code,
 		})
 	}
@@ -172,7 +172,7 @@ func (a *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"error": err.Err,
+			"error": err.Err.Error(),
 			"code":  err.Code,
 		})
 	}
@@ -190,7 +190,7 @@ func (a *AuthHandler) Logout(c *fiber.Ctx) error {
 	err := a.refreshService.LogoutRefreshToken(accToken)
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
-			"error": err.Err,
+			"error": err.Err.Error(),
 			"code":  err.Code,
 		})
 	}

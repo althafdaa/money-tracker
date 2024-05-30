@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"errors"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"time"
@@ -10,11 +11,40 @@ import (
 
 type TransactionRepository interface {
 	CreateTransaction(transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
-	DeleteTransactionByID(transactionID int64) *domain.Error
-	UpdateTransaction(transactionID int64, transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
+	FindAllTransactions(userID int) ([]entity.Transaction, *domain.Error)
+	DeleteTransactionByID(transactionID int) *domain.Error
+	GetOneTransactionByID(transactionID int) (*entity.Transaction, *domain.Error)
+	UpdateTransactionByID(transactionID int, transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
 }
 type transactionRepository struct {
 	db *gorm.DB
+}
+
+// FindAllTransactions implements TransactionRepository.
+func (t *transactionRepository) FindAllTransactions(userID int) (*[]entity.Transaction, *domain.Error) {
+	var data []entity.Transaction
+	result := t.db.Exec("select * from \"transaction\" where user_id = ? and deleted_at is null", userID).Scan(&data)
+
+	if result.Error != nil {
+		return nil, &domain.Error{Code: 500, Err: result.Error}
+	}
+
+	return &data, nil
+}
+
+// GetOneTransactionByID implements TransactionRepository.
+func (t *transactionRepository) GetOneTransactionByID(transactionID int) (*entity.Transaction, *domain.Error) {
+	var data entity.Transaction
+	result := t.db.Exec("select * from \"transaction\" where id = ?", transactionID).Scan(&data)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, &domain.Error{Code: 404, Err: result.Error, Info: "RECORD_NOT_FOUND"}
+		}
+		return nil, &domain.Error{Code: 500, Err: result.Error}
+	}
+
+	return &data, nil
 }
 
 // CreateTransaction implements TransactionRepository.
@@ -30,7 +60,7 @@ func (t *transactionRepository) CreateTransaction(transaction *entity.Transactio
 }
 
 // DeleteTransactionByID implements TransactionRepository.
-func (t *transactionRepository) DeleteTransactionByID(transactionID int64) *domain.Error {
+func (t *transactionRepository) DeleteTransactionByID(transactionID int) *domain.Error {
 	now := time.Now()
 
 	err := t.db.Exec("update transaction set deleted_at = ? where id = ?", &now, transactionID).Error
@@ -41,7 +71,7 @@ func (t *transactionRepository) DeleteTransactionByID(transactionID int64) *doma
 }
 
 // UpdateTransaction implements TransactionRepository.
-func (t *transactionRepository) UpdateTransaction(transactionID int64, transaction *entity.Transaction) (*entity.Transaction, *domain.Error) {
+func (t *transactionRepository) UpdateTransactionByID(transactionID int, transaction *entity.Transaction) (*entity.Transaction, *domain.Error) {
 	var data entity.Transaction
 	result := t.db.Raw("update \"transaction\" set amount = ?, user_id = ?, category_id = ?, subcategory_id = ?, transaction_type = ?, description = ? where id = ? returning *", transaction.Amount, transaction.UserID, transaction.CategoryID, transaction.SubcategoryID, transaction.TransactionType, transaction.Description, transactionID).Scan(&data)
 
