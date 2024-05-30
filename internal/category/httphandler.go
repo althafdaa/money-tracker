@@ -17,7 +17,7 @@ type CategoryHandler struct {
 
 func (h *CategoryHandler) CreateCategory(c *fiber.Ctx) error {
 	type CreateCategoryBody struct {
-		Name string `json:"name"`
+		Name string `json:"name" validate:"required,min=3,max20"`
 	}
 
 	var body CreateCategoryBody
@@ -47,7 +47,7 @@ func (h *CategoryHandler) CreateSubcategory(c *fiber.Ctx) error {
 	user := c.Locals("user").(*dto.ATClaims)
 
 	type CreateSubcategoryBody struct {
-		Name       string `json:"name" validate:"required"`
+		Name       string `json:"name" validate:"required,min=3,max=20"`
 		CategoryID int    `json:"category_id" validate:"required,numeric"`
 	}
 
