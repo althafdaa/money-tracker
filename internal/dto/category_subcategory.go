@@ -1,8 +1,16 @@
 package dto
 
-type CategoryBody struct {
-	Name string `json:"name"`
-	Slug string `json:"slug"`
+import "money-tracker/internal/database/entity"
+
+type CreateCategoryBody struct {
+	Name string              `json:"name" validate:"required,min=3,max20"`
+	Type entity.CategoryType `json:"type" validate:"required,category_type"`
+}
+
+type CreateCategoryRepoBody struct {
+	Name string              `json:"name"`
+	Slug string              `json:"slug"`
+	Type entity.CategoryType `json:"type"`
 }
 
 type SubcategoryBody struct {

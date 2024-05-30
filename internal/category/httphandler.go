@@ -16,11 +16,8 @@ type CategoryHandler struct {
 }
 
 func (h *CategoryHandler) CreateCategory(c *fiber.Ctx) error {
-	type CreateCategoryBody struct {
-		Name string `json:"name" validate:"required,min=3,max20"`
-	}
 
-	var body CreateCategoryBody
+	var body dto.CreateCategoryBody
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": errors.New("INVALID_REQUEST_BODY"),
@@ -28,11 +25,20 @@ func (h *CategoryHandler) CreateCategory(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := h.categoryService.CreateSlug(body.Name)
+	err := h.validator.Struct(body)
 
 	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+			"code":  fiber.ErrBadRequest,
+		})
+	}
+
+	res, resErr := h.categoryService.CreateCategory(&body)
+
+	if resErr != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err,
+			"error": resErr,
 			"code":  fiber.ErrInternalServerError,
 		})
 	}

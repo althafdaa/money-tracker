@@ -8,6 +8,7 @@ import (
 	"money-tracker/internal/config"
 	"money-tracker/internal/middleware"
 	refreshtoken "money-tracker/internal/refresh_token"
+	registervalidator "money-tracker/internal/register_validation"
 	"money-tracker/internal/router"
 	"money-tracker/internal/server"
 	"money-tracker/internal/transaction"
@@ -16,6 +17,9 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
+
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -23,8 +27,16 @@ func main() {
 
 	server := server.New()
 	server.App.Use(cors.New())
+
+	server.App.Use(requestid.New())
+	server.App.Use(logger.New(logger.Config{
+		TimeFormat: "02-Jan-2006, 15:04:05",
+		TimeZone:   "Asia/Jakarta",
+	}))
 	cfg := config.NewConfig()
 	googleCfg := cfg.GoogleOauthConfig()
+
+	registervalidator.NewValidationRegiser(server.Validator).RegisterCategoryType()
 
 	authMiddleware := middleware.NewAuthMiddleware()
 

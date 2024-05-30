@@ -10,8 +10,8 @@ import (
 )
 
 type CategoryRepository interface {
-	CreateOne(body *dto.CategoryBody) (*entity.Category, *domain.Error)
-	UpdateOne(id int, body *dto.CategoryBody) (*entity.Category, *domain.Error)
+	CreateOne(body *dto.CreateCategoryRepoBody) (*entity.Category, *domain.Error)
+	UpdateOne(id int, body *dto.CreateCategoryRepoBody) (*entity.Category, *domain.Error)
 	DeleteOne(id int) *domain.Error
 }
 type categoryRepository struct {
@@ -19,7 +19,7 @@ type categoryRepository struct {
 }
 
 // CreateOne implements CategoryRepository.
-func (c *categoryRepository) CreateOne(body *dto.CategoryBody) (*entity.Category, *domain.Error) {
+func (c *categoryRepository) CreateOne(body *dto.CreateCategoryRepoBody) (*entity.Category, *domain.Error) {
 	var category entity.Category
 	res := c.db.Exec("insert into category (name, slug) values (?, ?) returning *", body.Name, body.Slug).Scan(&category)
 
@@ -48,7 +48,7 @@ func (c *categoryRepository) DeleteOne(id int) *domain.Error {
 }
 
 // UpdateOne implements CategoryRepository.
-func (c *categoryRepository) UpdateOne(id int, body *dto.CategoryBody) (*entity.Category, *domain.Error) {
+func (c *categoryRepository) UpdateOne(id int, body *dto.CreateCategoryRepoBody) (*entity.Category, *domain.Error) {
 	var category entity.Category
 	res := c.db.Exec("update category set name = ?, slug = ? where id = ?", body.Name, body.Slug, id).Scan(&category)
 

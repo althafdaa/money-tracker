@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Cash",
+    "type": "income"
+  },
+  {
+    "name": "Food",
+    "type": "expense"
+  },
+  {
+    "name": "Ingridients",
+    "type": "expense"
+  },
+  {
+    "name": "Shopping",
+    "type": "expense"
+  },
+  {
+    "name": "Gas",
+    "type": "expense"
+  },
+  {
+    "name": "Transportation",
+    "type": "expense"
+  },
+  {
+    "name": "Bills",
+    "type": "expense"
+  },
+  {
+    "name": "Friends & Family",
+    "type": "expense"
+  },
+  {
+    "name": "Entertaiment",
+    "type": "expense"
+  },
+  {
+    "name": "Education",
+    "type": "expense"
+  },
+  {
+    "name": "Beauty",
+    "type": "expense"
+  },
+  {
+    "name": "Invest",
+    "type": "expense"
+  },
+  {
+    "name": "Other",
+    "type": "expense"
+  }
+]

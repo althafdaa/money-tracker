@@ -8,15 +8,15 @@ import (
 )
 
 type CategoryService interface {
-	CreateSlug(name string) (*entity.Category, *domain.Error)
+	CreateCategory(body *dto.CreateCategoryBody) (*entity.Category, *domain.Error)
 }
 type categoryService struct {
 	categoryRepo CategoryRepository
 }
 
 // CreateSlug implements CategoryService.
-func (c *categoryService) CreateSlug(name string) (*entity.Category, *domain.Error) {
-	slug, err := utils.Slugify(name)
+func (c *categoryService) CreateCategory(body *dto.CreateCategoryBody) (*entity.Category, *domain.Error) {
+	slug, err := utils.Slugify(body.Name)
 	if err != nil {
 		return nil, &domain.Error{
 			Code: 500,
@@ -24,7 +24,7 @@ func (c *categoryService) CreateSlug(name string) (*entity.Category, *domain.Err
 		}
 	}
 
-	res, resErr := c.categoryRepo.CreateOne(&dto.CategoryBody{Name: name, Slug: slug})
+	res, resErr := c.categoryRepo.CreateOne(&dto.CreateCategoryRepoBody{Name: body.Name, Slug: slug, Type: body.Type})
 
 	if resErr != nil {
 		return nil, resErr
