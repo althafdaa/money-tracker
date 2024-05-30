@@ -24,7 +24,10 @@ func (r *refreshTokenService) CheckRefreshTokenValidity(token string) (*entity.R
 
 	if err != nil {
 		if errors.Is(err.Err, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, &domain.Error{
+				Code: 401,
+				Err:  errors.New("REFRESH_TOKEN_NOT_FOUND"),
+			}
 		}
 		return nil, err
 	}
@@ -36,7 +39,10 @@ func (r *refreshTokenService) CheckRefreshTokenValidity(token string) (*entity.R
 		if err != nil {
 			return nil, err
 		}
-		return nil, nil
+		return nil, &domain.Error{
+			Code: 401,
+			Err:  errors.New("REFRESH_TOKEN_EXPIRED"),
+		}
 	}
 
 	return refresh, nil
