@@ -4,6 +4,7 @@ import (
 	"errors"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
+	"money-tracker/internal/dto"
 	"time"
 
 	"gorm.io/gorm"
@@ -11,7 +12,7 @@ import (
 
 type TransactionRepository interface {
 	CreateTransaction(transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
-	FindAllTransactions(userID int) ([]entity.Transaction, *domain.Error)
+	FindAllTransactions(userID int, values *dto.GetAllValueRepository) (*[]entity.Transaction, *domain.Error)
 	DeleteTransactionByID(transactionID int) *domain.Error
 	GetOneTransactionByID(transactionID int) (*entity.Transaction, *domain.Error)
 	UpdateTransactionByID(transactionID int, transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
@@ -21,9 +22,9 @@ type transactionRepository struct {
 }
 
 // FindAllTransactions implements TransactionRepository.
-func (t *transactionRepository) FindAllTransactions(userID int) (*[]entity.Transaction, *domain.Error) {
+func (t *transactionRepository) FindAllTransactions(userID int, values *dto.GetAllValueRepository) (*[]entity.Transaction, *domain.Error) {
 	var data []entity.Transaction
-	result := t.db.Exec("select * from \"transaction\" where user_id = ? and deleted_at is null", userID).Scan(&data)
+	result := t.db.Raw("SELECT * FROM transaction WHERE user_id = ? AND deleted_at IS NULL LIMIT ? OFFSET ?", userID, values.Limit, values.Offset).Scan(&data)
 
 	if result.Error != nil {
 		return nil, &domain.Error{Code: 500, Err: result.Error}

@@ -134,7 +134,16 @@ func (t *TransactionHandler) UpdateTransactionByID(c *fiber.Ctx) error {
 func (t *TransactionHandler) GetAllTransactions(c *fiber.Ctx) error {
 	user := c.Locals("user").(*dto.ATClaims)
 
-	res, transactionErr := t.transactionService.FindAllTransactions(int(user.UserID))
+	var query dto.GetAllQueryParams
+	if err := c.QueryParser(&query); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error(), "code": fiber.StatusBadRequest})
+	}
+
+	if err := t.validator.Struct(&query); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error(), "code": fiber.StatusBadRequest})
+	}
+
+	res, transactionErr := t.transactionService.FindAllTransactions(int(user.UserID), &query)
 	if transactionErr != nil {
 		return c.Status(transactionErr.Code).JSON(fiber.Map{"error": transactionErr.Err.Error(), "code": transactionErr.Code})
 	}
@@ -142,6 +151,10 @@ func (t *TransactionHandler) GetAllTransactions(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"code": fiber.StatusOK,
 		"data": res,
+		"metadata": fiber.Map{
+			"page":  query.Page,
+			"limit": query.Limit,
+		},
 	})
 }
 
@@ -154,6 +167,12 @@ func (t *TransactionHandler) GetOneTransactionByID(c *fiber.Ctx) error {
 	res, transactionErr := t.transactionService.GetOneTransactionByID(transactionID)
 	if transactionErr != nil {
 		return c.Status(transactionErr.Code).JSON(fiber.Map{"error": transactionErr.Err.Error(), "code": transactionErr.Code})
+	}
+
+	user := c.Locals("user").(*dto.ATClaims)
+
+	if user.UserID != res.UserID {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "UNAUTHORIZED", "code": fiber.StatusUnauthorized})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
