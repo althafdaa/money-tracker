@@ -23,8 +23,10 @@ func (s *HTTP) RegisterFiberRoutes(app *fiber.App) {
 	})
 
 	auth := v1.Group("/auth")
-	auth.Post("/google", s.auth.AuthGoogle)
+	auth.Get("/google", s.auth.GoogleLogin)
 	auth.Get("/refresh", s.auth.RefreshToken)
+	auth.Post("/google/callback", s.auth.AuthGoogle)
+
 }
 
 func NewHTTP(

@@ -78,7 +78,15 @@ func (a *AuthHandler) AuthGoogle(c *fiber.Ctx) error {
 		})
 	}
 
-	googleUserData, userErr := a.authService.ParseTokenToUser(code.Code)
+	token, tokenErr := a.authService.ExchangeToken(code.Code)
+	if tokenErr != nil {
+		return c.Status(tokenErr.Code).JSON(fiber.Map{
+			"error": tokenErr.Err.Error(),
+			"code":  tokenErr.Code,
+		})
+	}
+
+	googleUserData, userErr := a.authService.ParseTokenToUser(token.AccessToken)
 
 	if userErr != nil {
 		return c.Status(userErr.Code).JSON(fiber.Map{
@@ -104,7 +112,7 @@ func (a *AuthHandler) AuthGoogle(c *fiber.Ctx) error {
 			})
 		}
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"code": fiber.StatusOK,
+			"code": fiber.StatusCreated,
 			"data": token,
 		})
 	} else {
