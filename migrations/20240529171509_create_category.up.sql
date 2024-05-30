@@ -7,3 +7,5 @@ create table
         "slug" varchar(255) not null unique,
         "type" category_type_enum not null
     );
+
+create index "category_type_index" on "category" ("type");

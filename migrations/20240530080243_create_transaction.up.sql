@@ -20,3 +20,6 @@ alter table "transaction" add constraint "transaction_user_id_foreign" foreign k
 alter table "transaction" add constraint "transaction_category_id_foreign" foreign key ("category_id") references "category" ("id") on delete set null;
 
 alter table "transaction" add constraint "transaction_subcategory_id_foreign" foreign key ("subcategory_id") references "subcategory" ("id") on delete set null;
+
+-- create index for types
+create index "transaction_type_index" on "transaction" ("transaction_type");
