@@ -10,6 +10,7 @@ create table
         subcategory_id int,
         created_at timestamp DEFAULT 'now()' NOT NULL,
         updated_at timestamp DEFAULT 'now()' NOT NULL,
+        transaction_at timestamp not null,
         deleted_at timestamp,
         transaction_type transaction_type_enum not null
     );
