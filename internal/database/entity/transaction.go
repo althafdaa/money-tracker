@@ -18,8 +18,9 @@ type Transaction struct {
 	Amount          int64           `json:"amount"`
 	UserID          int64           `json:"user_id"`
 	CategoryID      int64           `json:"category_id"`
-	SubcategoryID   int64           `json:"subcategory_id"`
 	TransactionType TransactionType `json:"transaction_type"`
+	TransactionAt   time.Time       `json:"transaction_at"`
+	SubcategoryID   *int64          `json:"subcategory_id"`
 	Description     *string         `json:"description"`
 	CreatedAt       *time.Time      `json:"created_at"`
 	UpdatedAt       *time.Time      `json:"updated_at"`

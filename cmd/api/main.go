@@ -10,6 +10,7 @@ import (
 	refreshtoken "money-tracker/internal/refresh_token"
 	"money-tracker/internal/router"
 	"money-tracker/internal/server"
+	"money-tracker/internal/transaction"
 	"money-tracker/internal/user"
 	"os"
 	"strconv"
@@ -43,7 +44,11 @@ func main() {
 	authService := auth.NewAuthService(googleCfg, refreshTokenService)
 	authHandler := auth.NewAuthHandler(googleCfg, authService, server.Validator, userService, refreshTokenService)
 
-	routes := router.NewHTTP(authHandler, categoryHandler, authMiddleware)
+	transactionRepo := transaction.NewTransactionRepository(server.Db)
+	transactionService := transaction.NewTransactionService(transactionRepo)
+	transactionHandler := transaction.NewTransactionHandler(transactionService, server.Validator)
+
+	routes := router.NewHTTP(authHandler, categoryHandler, transactionHandler, authMiddleware)
 	routes.RegisterFiberRoutes(server.App)
 
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
