@@ -7,6 +7,7 @@ import (
 	"money-tracker/internal/auth"
 	"money-tracker/internal/category"
 	"money-tracker/internal/category/subcategory"
+	"money-tracker/internal/config"
 	"money-tracker/internal/middleware"
 	refreshtoken "money-tracker/internal/refresh_token"
 	"money-tracker/internal/router"
@@ -15,17 +16,17 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
-	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
 
 func InitializeServer(
 	db *gorm.DB,
 	validator *validator.Validate,
-	googleConfig *oauth2.Config,
 ) *router.HTTP {
 	wire.Build(
 		router.NewHTTP,
+
+		config.NewConfigInit,
 
 		middleware.NewAuthMiddleware,
 

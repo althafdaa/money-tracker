@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"money-tracker/internal"
-	"money-tracker/internal/config"
 	"money-tracker/internal/database/seeder"
 	"money-tracker/internal/server"
 	"os"
@@ -26,16 +25,14 @@ func main() {
 		TimeFormat: "02-Jan-2006, 15:04:05",
 		TimeZone:   "Asia/Jakarta",
 	}))
-	cfg := config.NewConfig()
-	googleCfg := cfg.GoogleOauthConfig()
 
 	seedErr := seeder.NewSeeder(server.Db).SeedEverything()
 	if seedErr != nil {
-		panic(fmt.Sprintf("cannot seed category: %s", seedErr))
+		panic(fmt.Sprintf("FAILED_TO_SEED: %s", seedErr))
 	}
 
 	internal.
-		InitializeServer(server.Db, server.Validator, googleCfg).
+		InitializeServer(server.Db, server.Validator).
 		RegisterFiberRoutes(server.App)
 
 	port, _ := strconv.Atoi(os.Getenv("PORT"))

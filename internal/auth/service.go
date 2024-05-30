@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"money-tracker/internal/config"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
@@ -25,8 +26,8 @@ type AuthService interface {
 }
 
 type authService struct {
-	googleConfig        *oauth2.Config
 	refreshTokenService refreshtoken.RefreshTokenService
+	config              *config.Config
 }
 
 // GenerateToken implements AuthService.
@@ -106,7 +107,7 @@ func (a *authService) ParseTokenToUser(token string) (*dto.GoogleUserData, *doma
 
 // ExchangeToken implements AuthService.
 func (a *authService) ExchangeToken(code string) (*oauth2.Token, *domain.Error) {
-	token, err := a.googleConfig.Exchange(context.Background(), code)
+	token, err := a.config.GoogleOauthConfig().Exchange(context.Background(), code)
 	if err != nil {
 		return nil, &domain.Error{
 			Err:  err,
@@ -116,9 +117,12 @@ func (a *authService) ExchangeToken(code string) (*oauth2.Token, *domain.Error) 
 	return token, nil
 }
 
-func NewAuthService(googleConfig *oauth2.Config, refreshTokenService refreshtoken.RefreshTokenService) AuthService {
+func NewAuthService(
+	refreshTokenService refreshtoken.RefreshTokenService,
+	config *config.Config,
+) AuthService {
 	return &authService{
-		googleConfig,
 		refreshTokenService,
+		config,
 	}
 }

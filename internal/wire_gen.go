@@ -8,11 +8,11 @@ package internal
 
 import (
 	"github.com/go-playground/validator/v10"
-	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 	"money-tracker/internal/auth"
 	"money-tracker/internal/category"
 	"money-tracker/internal/category/subcategory"
+	"money-tracker/internal/config"
 	"money-tracker/internal/middleware"
 	"money-tracker/internal/refresh_token"
 	"money-tracker/internal/router"
@@ -22,13 +22,14 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeServer(db *gorm.DB, validator2 *validator.Validate, googleConfig *oauth2.Config) *router.HTTP {
+func InitializeServer(db *gorm.DB, validator2 *validator.Validate) *router.HTTP {
 	refreshTokenRepository := refreshtoken.NewRefreshTokenRepository(db)
 	refreshTokenService := refreshtoken.NewRefreshTokenService(refreshTokenRepository)
-	authService := auth.NewAuthService(googleConfig, refreshTokenService)
+	configConfig := config.NewConfigInit()
+	authService := auth.NewAuthService(refreshTokenService, configConfig)
 	userRepository := user.NewUserRepository(db)
 	userService := user.NewUserService(userRepository)
-	authHandler := auth.NewAuthHandler(googleConfig, authService, validator2, userService, refreshTokenService)
+	authHandler := auth.NewAuthHandler(authService, validator2, userService, refreshTokenService, configConfig)
 	categoryRepository := category.NewCategoryRepository(db)
 	categoryService := category.NewCategoryService(categoryRepository)
 	subcategoryRepository := subcategory.NewSubcategoryRepository(db)

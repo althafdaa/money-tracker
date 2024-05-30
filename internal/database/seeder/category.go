@@ -19,14 +19,7 @@ type Seeder struct {
 }
 
 func (s *Seeder) seedCategory() error {
-	is_seeding, err := strconv.ParseBool(os.Getenv("SEED"))
-
-	if !is_seeding || err != nil {
-		return nil
-	}
-
 	file, err := os.Open("public/default_category.json")
-
 	if err != nil {
 		return err
 	}
@@ -37,6 +30,7 @@ func (s *Seeder) seedCategory() error {
 		return err
 	}
 
+	println("START_SEEDING_CATEGORY")
 	for _, category := range categories {
 		slug, err := utils.Slugify(category.Name)
 		if err != nil {
@@ -44,15 +38,14 @@ func (s *Seeder) seedCategory() error {
 			return err
 		}
 
-		println("Seeding category: ", category.Name)
 		err = s.db.Exec("insert into category (name, slug, type) values (?, ?, ?) returning *", category.Name, slug, category.Type).Error
-
 		if err != nil {
 			println(err)
 			return err
 		}
 		println("Seeding success: ", category.Name)
 	}
+	println("END_SEEDING_CATEGORY")
 
 	return nil
 }

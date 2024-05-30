@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"money-tracker/internal/config"
 	"money-tracker/internal/dto"
 	refreshtoken "money-tracker/internal/refresh_token"
 	"money-tracker/internal/user"
@@ -10,20 +11,19 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/oauth2"
 )
 
 type AuthHandler struct {
-	googleConfig   *oauth2.Config
 	authService    AuthService
 	validator      *validator.Validate
 	userService    user.UserService
 	refreshService refreshtoken.RefreshTokenService
+	config         *config.Config
 }
 
 func (a *AuthHandler) GoogleLogin(c *fiber.Ctx) error {
 	state := os.Getenv("GOOGLE_STATE")
-	url := a.googleConfig.AuthCodeURL(state)
+	url := a.config.GoogleOauthConfig().AuthCodeURL(state)
 	c.Status(fiber.StatusFound)
 	return c.Redirect(url)
 }
@@ -202,11 +202,11 @@ func (a *AuthHandler) Logout(c *fiber.Ctx) error {
 }
 
 func NewAuthHandler(
-	googleConfig *oauth2.Config,
 	authService AuthService,
 	validator *validator.Validate,
 	userService user.UserService,
 	refreshTokenService refreshtoken.RefreshTokenService,
+	config *config.Config,
 ) *AuthHandler {
-	return &AuthHandler{googleConfig, authService, validator, userService, refreshTokenService}
+	return &AuthHandler{authService, validator, userService, refreshTokenService, config}
 }
