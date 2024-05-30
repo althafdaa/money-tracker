@@ -1,1 +1,1 @@
-drop table if exist subcategory;
+drop table if exist "subcategory";
