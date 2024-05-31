@@ -39,7 +39,7 @@ func (h *CategoryHandler) CreateCategory(c *fiber.Ctx) error {
 
 	if resErr != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": resErr,
+			"error": resErr.Err.Error(),
 			"code":  fiber.ErrInternalServerError,
 		})
 	}
@@ -82,9 +82,9 @@ func (h *CategoryHandler) CreateSubcategory(c *fiber.Ctx) error {
 	})
 
 	if createError != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": createError,
-			"code":  fiber.ErrInternalServerError,
+		return c.Status(createError.Code).JSON(fiber.Map{
+			"error": createError.Err.Error(),
+			"code":  createError.Code,
 		})
 	}
 

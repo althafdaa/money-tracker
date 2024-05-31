@@ -3,8 +3,8 @@ package dto
 import "money-tracker/internal/database/entity"
 
 type CreateCategoryBody struct {
-	Name string              `json:"name" validate:"required,min=3,max20"`
-	Type entity.CategoryType `json:"type" validate:"required,category_type"`
+	Name string              `json:"name" validate:"required,min=3,max=20"`
+	Type entity.CategoryType `json:"type" validate:"required"`
 }
 
 type CreateCategoryRepoBody struct {

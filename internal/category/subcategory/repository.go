@@ -1,6 +1,7 @@
 package subcategory
 
 import (
+	"errors"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
@@ -21,11 +22,21 @@ type subcategoryRepository struct {
 // CreateOne implements SubcategoryRepository.
 func (s *subcategoryRepository) CreateOne(body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error) {
 	var subcategory entity.Subcategory
-	res := s.db.Exec("insert into subcategory (name, slug, category_id, user_id) values (?, ?, ?, ?) returning *", body.Name, body.Slug, body.CategoryID, body.UserID).Scan(&subcategory)
+	err := s.db.Table("subcategory").Create(&entity.Subcategory{
+		Name:       body.Name,
+		Slug:       body.Slug,
+		CategoryID: body.CategoryID,
+	}).Scan(&subcategory).Error
 
-	if res.Error != nil {
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, &domain.Error{
+				Code: 400,
+				Err:  errors.New("SUBCATEGORY_ALREADY_EXISTS"),
+			}
+		}
 		return nil, &domain.Error{
-			Err:  res.Error,
+			Err:  err,
 			Code: 500,
 		}
 	}
@@ -36,7 +47,7 @@ func (s *subcategoryRepository) CreateOne(body *dto.SubcategoryBody) (*entity.Su
 // DeleteById implements SubcategoryRepository.
 func (s *subcategoryRepository) DeleteByID(id int) *domain.Error {
 	now := time.Now()
-	err := s.db.Exec("update subcategory set deleted_at = ? where id = ?", &now, id).Error
+	err := s.db.Raw("update subcategory set deleted_at = ? where id = ?", &now, id).Error
 
 	if err != nil {
 		return &domain.Error{

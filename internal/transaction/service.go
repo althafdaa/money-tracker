@@ -11,14 +11,14 @@ type TransactionService interface {
 	UpdateTransactionByID(transactionID int, transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
 	GetOneTransactionByID(transactionID int) (*entity.Transaction, *domain.Error)
 	DeleteTransactionByID(transactionID int) *domain.Error
-	FindAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]entity.Transaction, *domain.Error)
+	FindAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]entity.PgTransaction, *domain.Error)
 }
 type transactionService struct {
 	transactionRepository TransactionRepository
 }
 
 // FindAllTransactions implements TransactionService.
-func (t *transactionService) FindAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]entity.Transaction, *domain.Error) {
+func (t *transactionService) FindAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]entity.PgTransaction, *domain.Error) {
 	offset := (query.Page - 1) * query.Limit
 	res, err := t.transactionRepository.FindAllTransactions(userID, &dto.GetAllValueRepository{
 		Offset: offset,

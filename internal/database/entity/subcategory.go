@@ -7,3 +7,11 @@ type Subcategory struct {
 	CategoryID int    `json:"category_id"`
 	UserID     int    `json:"user_id"`
 }
+
+type PgSubcategory struct {
+	ID       int
+	Name     string
+	Slug     string
+	Category PgCategory
+	User     PgUser
+}

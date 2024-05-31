@@ -1,6 +1,7 @@
 package category
 
 import (
+	"errors"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
@@ -21,11 +22,21 @@ type categoryRepository struct {
 // CreateOne implements CategoryRepository.
 func (c *categoryRepository) CreateOne(body *dto.CreateCategoryRepoBody) (*entity.Category, *domain.Error) {
 	var category entity.Category
-	res := c.db.Exec("insert into category (name, slug, type) values (?, ?, ?) returning *", body.Name, body.Slug, body.Type).Scan(&category)
+	err := c.db.Table("category").Create(&entity.Category{
+		Name: body.Name,
+		Slug: body.Slug,
+		Type: body.Type,
+	}).Error
 
-	if res.Error != nil {
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, &domain.Error{
+				Code: 400,
+				Err:  errors.New("CATEGORY_ALREADY_EXISTS"),
+			}
+		}
 		return nil, &domain.Error{
-			Err:  res.Error,
+			Err:  err,
 			Code: 500,
 		}
 	}

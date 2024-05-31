@@ -42,13 +42,14 @@ func (r *refreshTokenService) CheckRefreshTokenValidity(token string) (*entity.R
 		return nil, err
 	}
 
-	isExpired := refresh.ExpiredAt.After(time.Now())
+	err = r.refreshTokenRepository.DeleteByRefreshToken(token)
+	if err != nil {
+		return nil, err
+	}
+
+	isExpired := time.Now().After(*refresh.ExpiredAt)
 
 	if isExpired {
-		err := r.refreshTokenRepository.DeleteByRefreshToken(token)
-		if err != nil {
-			return nil, err
-		}
 		return nil, &domain.Error{
 			Code: 401,
 			Err:  errors.New("REFRESH_TOKEN_EXPIRED"),

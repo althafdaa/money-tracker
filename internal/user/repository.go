@@ -20,7 +20,7 @@ type userRepository struct {
 // GetOneUserByID implements UserRepository.
 func (u *userRepository) GetOneUserByID(id int) (*entity.User, *domain.Error) {
 	var user *entity.User
-	res := u.db.Raw("select * from user_data where email = ? limit 1", id).First(&user)
+	res := u.db.Raw("select * from user_data where id = ? limit 1", id).First(&user)
 
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {

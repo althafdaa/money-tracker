@@ -13,3 +13,10 @@ type Category struct {
 	Slug string       `json:"slug"`
 	Type CategoryType `json:"type"`
 }
+
+type PgCategory struct {
+	ID   int
+	Name string
+	Slug string
+	Type CategoryType
+}

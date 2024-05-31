@@ -33,7 +33,7 @@ type authService struct {
 // GenerateToken implements AuthService.
 func (a *authService) GenerateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error) {
 	secret := os.Getenv("JWT_SECRET")
-	expiredTime := time.Now().Add(time.Minute * 5)
+	expiredTime := time.Now().Add(time.Minute * 60)
 	claims := &dto.ATClaims{
 		UserID: user.ID,
 		Email:  user.Email,

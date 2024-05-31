@@ -11,8 +11,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
-
-	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {

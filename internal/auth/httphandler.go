@@ -47,7 +47,7 @@ func (a *AuthHandler) GoogleCallback(c *fiber.Ctx) error {
 		})
 	}
 
-	user, err := a.authService.ParseTokenToUser(token.AccessToken)
+	googleUserData, err := a.authService.ParseTokenToUser(token.AccessToken)
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
@@ -55,10 +55,50 @@ func (a *AuthHandler) GoogleCallback(c *fiber.Ctx) error {
 			"code":  err.Code,
 		})
 	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"code": fiber.StatusOK,
-		"data": user,
-	})
+	checkedUser, existErr := a.userService.CheckEmail(googleUserData.Email)
+
+	if existErr != nil {
+		return c.Status(existErr.Code).JSON(fiber.Map{
+			"error": existErr.Err.Error(),
+			"code":  existErr.Code,
+		})
+	}
+
+	if checkedUser != nil {
+		token, err := a.authService.GenerateNewToken(checkedUser)
+		if err != nil {
+			return c.Status(err.Code).JSON(fiber.Map{
+				"error": err.Err.Error(),
+				"code":  err.Code,
+			})
+		}
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"code": fiber.StatusCreated,
+			"data": token,
+		})
+	} else {
+		checkedUser, err := a.userService.CreateUserFromGoogle(googleUserData)
+		if err != nil {
+			return c.Status(err.Code).JSON(fiber.Map{
+				"error": err.Err.Error(),
+				"code":  err.Code,
+			})
+		}
+
+		token, err := a.authService.GenerateNewToken(checkedUser)
+
+		if err != nil {
+			return c.Status(err.Code).JSON(fiber.Map{
+				"error": err.Err.Error(),
+				"code":  err.Code,
+			})
+		}
+
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+			"code": fiber.StatusCreated,
+			"data": token,
+		})
+	}
 }
 
 func (a *AuthHandler) AuthGoogle(c *fiber.Ctx) error {

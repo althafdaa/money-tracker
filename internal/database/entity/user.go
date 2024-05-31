@@ -16,3 +16,14 @@ type User struct {
 	UpdatedAt         *time.Time     `json:"updated_at"`
 	DeletedAt         gorm.DeletedAt `json:"deleted_at"`
 }
+
+type PgUser struct {
+	ID                int64
+	Name              string
+	Email             string
+	Hash              string
+	ProfilePictureUrl string
+	CreatedAt         *time.Time
+	UpdatedAt         *time.Time
+	DeletedAt         gorm.DeletedAt
+}

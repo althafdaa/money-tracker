@@ -7,7 +7,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 )
 
-require github.com/google/wire v0.6.0 // indirect
+require github.com/google/wire v0.6.0
 
 require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect

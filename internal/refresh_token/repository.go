@@ -3,7 +3,6 @@ package refreshtoken
 import (
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -35,10 +34,7 @@ func (r *refreshTokenRepository) GetOneByRefreshToken(token string) (*entity.Ref
 
 // DeleteByAccessToken implements RefreshTokenRepository.
 func (r *refreshTokenRepository) DeleteByAccessToken(token string) *domain.Error {
-
-	now := time.Now()
-
-	err := r.db.Raw("update refresh_token set deleted_at = ? where access_token = ?", &now, token).Error
+	err := r.db.Exec("delete from refresh_token where access_token = ?", token).Error
 
 	if err != nil {
 		return &domain.Error{
@@ -52,10 +48,7 @@ func (r *refreshTokenRepository) DeleteByAccessToken(token string) *domain.Error
 
 // DeleteByToken implements RefreshTokenRepository.
 func (r *refreshTokenRepository) DeleteByRefreshToken(token string) *domain.Error {
-
-	now := time.Now()
-
-	err := r.db.Exec("update refresh_token set deleted_at = ? where refresh_token = ?", &now, token).Error
+	err := r.db.Exec("delete from refresh_token where refresh_token = ?", token).Error
 
 	if err != nil {
 		return &domain.Error{

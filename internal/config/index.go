@@ -17,7 +17,8 @@ func (a *Config) GoogleOauthConfig() *oauth2.Config {
 		ClientID:     client_id,
 		ClientSecret: client_secret,
 		Endpoint:     google.Endpoint,
-		RedirectURL:  "http://localhost:3000",
+		// RedirectURL:  "http://localhost:3000",
+		RedirectURL: "http://localhost:8080/api/v1/auth/google/callback",
 		Scopes: []string{"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile"},
 	}
