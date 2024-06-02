@@ -1,0 +1,33 @@
+meta {
+  name: Update Transaction
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{hostname}}/api/v1/transaction/8
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIkVtYWlsIjoiYWx0aGFmZGVtaWFuZHJhYWtiYXJAZ21haWwuY29tIiwiZXhwIjoxNzE3MzE2NDMxfQ.FIDXuKm1wedTX84MSZ9s-8bX22pPvin696-fEiARJa0
+}
+
+auth:basic {
+  username: 
+  password: 
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "amount": 820000,
+    "category_id": 2,
+    "transaction_at": "2024-06-02",
+    "description": "mobil"
+  }
+}

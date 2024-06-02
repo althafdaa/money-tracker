@@ -1,0 +1,26 @@
+meta {
+  name: Google Callback
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{hostname}}/api/v1/auth/google/callback
+  body: json
+  auth: none
+}
+
+auth:basic {
+  username: 
+  password: 
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "code": "something"
+  }
+}

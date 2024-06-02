@@ -1,0 +1,32 @@
+meta {
+  name: Delete Subcategory
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{hostname}}/api/v1/category/subcategory/1
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer
+  : 
+}
+
+auth:basic {
+  username: 
+  password: 
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "name": "Food",
+    "type": "expense"
+  }
+}

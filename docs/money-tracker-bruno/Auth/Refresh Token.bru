@@ -1,0 +1,30 @@
+meta {
+  name: Refresh Token
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{hostname}}/api/v1/auth/refresh
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{refresh_token}}
+}
+
+auth:basic {
+  username: 
+  password: 
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "code": "something"
+  }
+}

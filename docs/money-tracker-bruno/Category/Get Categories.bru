@@ -1,0 +1,31 @@
+meta {
+  name: Get Categories
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{hostname}}/api/v1/category
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{access_token}}
+}
+
+auth:basic {
+  username: 
+  password: 
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "name": "Somestuff",
+    "type": "expense"
+  }
+}

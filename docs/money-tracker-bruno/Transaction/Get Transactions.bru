@@ -1,0 +1,37 @@
+meta {
+  name: Get Transactions
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{hostname}}/api/v1/transaction?page=2&limit=6
+  body: none
+  auth: none
+}
+
+query {
+  page: 2
+  limit: 6
+}
+
+headers {
+  Authorization: Bearer {{access_token}}
+}
+
+auth:basic {
+  username: 
+  password: 
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "amount": 999999,
+    "category_id": 2,
+    "transaction_at": "2024-06-02"
+  }
+}

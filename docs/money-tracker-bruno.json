@@ -1,0 +1,609 @@
+{
+  "name": "money-tracker-bruno",
+  "version": "1",
+  "items": [
+    {
+      "type": "http",
+      "name": "Hello world",
+      "seq": 1,
+      "request": {
+        "url": "{{hostname}}/",
+        "method": "GET",
+        "headers": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": []
+        },
+        "auth": {
+          "mode": "none",
+          "basic": {
+            "username": "",
+            "password": ""
+          },
+          "bearer": {
+            "token": ""
+          }
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "query": []
+      }
+    },
+    {
+      "type": "http",
+      "name": "Restricted",
+      "seq": 2,
+      "request": {
+        "url": "{{hostname}}/api/v1/restricted",
+        "method": "GET",
+        "headers": [
+          {
+            "name": "Authorization",
+            "value": "asdasd",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": []
+        },
+        "auth": {
+          "mode": "none",
+          "basic": {
+            "username": "",
+            "password": ""
+          },
+          "bearer": {
+            "token": ""
+          }
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "query": []
+      }
+    },
+    {
+      "type": "folder",
+      "name": "Auth",
+      "items": [
+        {
+          "type": "http",
+          "name": "Google Callback",
+          "seq": 1,
+          "request": {
+            "url": "{{hostname}}/api/v1/auth/google/callback",
+            "method": "POST",
+            "headers": [],
+            "body": {
+              "mode": "json",
+              "json": "{\n  \"code\": \"something\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Logout",
+          "seq": 2,
+          "request": {
+            "url": "{{hostname}}/api/v1/auth/logout",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "json",
+              "json": "{\n  \"code\": \"something\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Refresh Token",
+          "seq": 3,
+          "request": {
+            "url": "{{hostname}}/api/v1/auth/refresh",
+            "method": "GET",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer {{refresh_token}}",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "none",
+              "json": "{\n  \"code\": \"something\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        }
+      ]
+    },
+    {
+      "type": "folder",
+      "name": "Category",
+      "items": [
+        {
+          "type": "http",
+          "name": "Create Category",
+          "seq": 1,
+          "request": {
+            "url": "{{hostname}}/api/v1/category",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "json",
+              "json": "{\n  \"name\": \"Again ?\",\n  \"type\": \"expense\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Create Subcategory",
+          "seq": 3,
+          "request": {
+            "url": "{{hostname}}/api/v1/category/subcategory",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "json",
+              "json": "{\n  \"name\": \"Makanan Lagi\",\n  \"category_id\": 2\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Delete Subcategory",
+          "seq": 4,
+          "request": {
+            "url": "{{hostname}}/api/v1/category/subcategory/1",
+            "method": "DELETE",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer",
+                "enabled": true
+              },
+              {
+                "name": "",
+                "value": "",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "none",
+              "json": "{\n  \"name\": \"Food\",\n  \"type\": \"expense\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Get Categories",
+          "seq": 2,
+          "request": {
+            "url": "{{hostname}}/api/v1/category",
+            "method": "GET",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "none",
+              "json": "{\n  \"name\": \"Somestuff\",\n  \"type\": \"expense\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Update Subcategory",
+          "seq": 5,
+          "request": {
+            "url": "{{hostname}}/api/v1/category/subcategory/1",
+            "method": "PUT",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "json",
+              "json": "{\n  \"name\": \"Food\",\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        }
+      ]
+    },
+    {
+      "type": "folder",
+      "name": "Transaction",
+      "items": [
+        {
+          "type": "http",
+          "name": "Create Transaction",
+          "seq": 1,
+          "request": {
+            "url": "{{hostname}}/api/v1/transaction",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIkVtYWlsIjoiYWx0aGFmZGVtaWFuZHJhYWtiYXJAZ21haWwuY29tIiwiZXhwIjoxNzE3MzE2NDMxfQ.FIDXuKm1wedTX84MSZ9s-8bX22pPvin696-fEiARJa0",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "json",
+              "json": "{\n  \"amount\": 10000000,\n  \"category_id\": 1,\n  \"transaction_at\": \"2024-06-02\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Delete Transaction By ID",
+          "seq": 4,
+          "request": {
+            "url": "{{hostname}}/api/v1/transaction/2",
+            "method": "DELETE",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIkVtYWlsIjoiYWx0aGFmZGVtaWFuZHJhYWtiYXJAZ21haWwuY29tIiwiZXhwIjoxNzE3MzEyNDkwfQ.r9N6RhM2iG7aun2N4ElOg0nV4h_NYE2I0eMEHqJklg0",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "none",
+              "json": "{\n  \"amount\": 999999,\n  \"category_id\": 2,\n  \"transaction_at\": \"2024-06-02\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Get Transaction By ID",
+          "seq": 3,
+          "request": {
+            "url": "{{hostname}}/api/v1/transaction/16",
+            "method": "GET",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIkVtYWlsIjoiYWx0aGFmZGVtaWFuZHJhYWtiYXJAZ21haWwuY29tIiwiZXhwIjoxNzE3MzEyNDkwfQ.r9N6RhM2iG7aun2N4ElOg0nV4h_NYE2I0eMEHqJklg0",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "none",
+              "json": "{\n  \"amount\": 999999,\n  \"category_id\": 2,\n  \"transaction_at\": \"2024-06-02\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        },
+        {
+          "type": "http",
+          "name": "Get Transactions",
+          "seq": 5,
+          "request": {
+            "url": "{{hostname}}/api/v1/transaction?page=2&limit=6",
+            "method": "GET",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "none",
+              "json": "{\n  \"amount\": 999999,\n  \"category_id\": 2,\n  \"transaction_at\": \"2024-06-02\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": [
+              {
+                "name": "page",
+                "value": "2",
+                "enabled": true
+              },
+              {
+                "name": "limit",
+                "value": "6",
+                "enabled": true
+              }
+            ]
+          }
+        },
+        {
+          "type": "http",
+          "name": "Update Transaction",
+          "seq": 2,
+          "request": {
+            "url": "{{hostname}}/api/v1/transaction/8",
+            "method": "PUT",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIkVtYWlsIjoiYWx0aGFmZGVtaWFuZHJhYWtiYXJAZ21haWwuY29tIiwiZXhwIjoxNzE3MzE2NDMxfQ.FIDXuKm1wedTX84MSZ9s-8bX22pPvin696-fEiARJa0",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "json",
+              "json": "{\n  \"amount\": 820000,\n  \"category_id\": 2,\n  \"transaction_at\": \"2024-06-02\",\n  \"description\": \"mobil\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": []
+            },
+            "auth": {
+              "mode": "none",
+              "basic": {
+                "username": "",
+                "password": ""
+              },
+              "bearer": {
+                "token": ""
+              }
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "query": []
+          }
+        }
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "variables": [
+        {
+          "name": "hostname",
+          "value": "http://127.0.0.1:8080",
+          "enabled": true,
+          "secret": false,
+          "type": "text"
+        },
+        {
+          "name": "access_token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIkVtYWlsIjoiYWx0aGFmZGVtaWFuZHJhYWtiYXJAZ21haWwuY29tIiwiZXhwIjoxNzE3MzMyMjQzfQ.9Ni91dGtspwaCd1Q5Lrk55KtOSDyqXfHIqWoKt98D-k",
+          "enabled": true,
+          "secret": false,
+          "type": "text"
+        },
+        {
+          "name": "refresh_token",
+          "value": "CnXPhB6ZcC70FlDONi3KLVWOjekwYC8i",
+          "enabled": true,
+          "secret": false,
+          "type": "text"
+        }
+      ],
+      "name": "money tracker env"
+    }
+  ]
+}

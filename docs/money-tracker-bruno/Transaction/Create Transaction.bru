@@ -1,0 +1,32 @@
+meta {
+  name: Create Transaction
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{hostname}}/api/v1/transaction
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIkVtYWlsIjoiYWx0aGFmZGVtaWFuZHJhYWtiYXJAZ21haWwuY29tIiwiZXhwIjoxNzE3MzE2NDMxfQ.FIDXuKm1wedTX84MSZ9s-8bX22pPvin696-fEiARJa0
+}
+
+auth:basic {
+  username: 
+  password: 
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "amount": 10000000,
+    "category_id": 1,
+    "transaction_at": "2024-06-02"
+  }
+}

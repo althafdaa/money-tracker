@@ -1,0 +1,32 @@
+meta {
+  name: Get Transaction By ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{hostname}}/api/v1/transaction/16
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIkVtYWlsIjoiYWx0aGFmZGVtaWFuZHJhYWtiYXJAZ21haWwuY29tIiwiZXhwIjoxNzE3MzEyNDkwfQ.r9N6RhM2iG7aun2N4ElOg0nV4h_NYE2I0eMEHqJklg0
+}
+
+auth:basic {
+  username: 
+  password: 
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "amount": 999999,
+    "category_id": 2,
+    "transaction_at": "2024-06-02"
+  }
+}
