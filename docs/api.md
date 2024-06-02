@@ -458,3 +458,33 @@ type Response = {
     };
   };
   ```
+
+#### GET /api/v1/transaction/total
+
+- Auth Required
+- Query Parameters
+
+  ```ts
+  type Query = {
+    page: number; // min: 1,
+    limit: number; // min: 1, max: 20
+    category_id?: string;
+    subcategory_id?: string;
+    started_at?: string; // YYYY-MM-DD
+    ended_at?: string; // YYYY-MM-DD
+    type: 'income' | 'expense';
+  };
+  ```
+
+- Response
+
+  ```ts
+  type Response = {
+    code: 200;
+    data: {
+      total: number;
+      total_income: number;
+      total_expense: number;
+    };
+  };
+  ```

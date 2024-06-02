@@ -15,12 +15,38 @@ type TransactionRepository interface {
 	FindAllTransactions(userID int, values *dto.GetAllQueryParams) (*[]entity.TransactionRaw, *domain.Error)
 	FindAllTransactionsCount(userID int, values *dto.GetAllQueryParams) (totalDocs int, err *domain.Error)
 	findAllTransactionBuildQuery(userID int, values *dto.GetAllQueryParams) (string, string, []interface{})
+	GetAllTransactionTotal(userID int, values *dto.GetAllQueryParams) (*entity.TotalTransaction, *domain.Error)
 	DeleteTransactionByID(transactionID int) *domain.Error
 	GetOneTransactionByID(transactionID int) (*entity.TransactionRaw, *domain.Error)
 	UpdateTransactionByID(transactionID int, transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
 }
 type transactionRepository struct {
 	db *gorm.DB
+}
+
+// GetAllTransactionTotal implements TransactionRepository.
+func (t *transactionRepository) GetAllTransactionTotal(userID int, values *dto.GetAllQueryParams) (*entity.TotalTransaction, *domain.Error) {
+
+	var total *entity.TotalTransaction
+	_, whereClause, args := t.findAllTransactionBuildQuery(userID, values)
+
+	query := fmt.Sprintf(`
+		select
+			sum(t.amount) as total,
+			sum(case when t.transaction_type = 'income' then t.amount else 0 end) as total_income,
+			sum(case when t.transaction_type = 'expense' then t.amount else 0 end) as total_expense
+		from
+			"transaction" t
+		%s
+	`, whereClause)
+
+	err := t.db.Raw(query, args...).Scan(&total).Error
+
+	if err != nil {
+		return nil, &domain.Error{Code: 500, Err: err}
+	}
+
+	return total, nil
 }
 
 // findAllTransactionBuildQuery implements TransactionRepository.

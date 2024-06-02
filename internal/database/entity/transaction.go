@@ -56,3 +56,9 @@ type TransactionRaw struct {
 	UpdatedAt       *time.Time      `json:"updated_at"`
 	DeletedAt       gorm.DeletedAt  `json:"-"`
 }
+
+type TotalTransaction struct {
+	Total        int
+	TotalIncome  int
+	TotalExpense int
+}

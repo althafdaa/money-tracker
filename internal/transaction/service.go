@@ -19,6 +19,7 @@ type TransactionService interface {
 	GetOneTransactionByID(transactionID int) (*dto.TransactionResponse, *domain.Error)
 	DeleteTransactionByID(transactionID int) *domain.Error
 	GetAllPaginatedTransactions(userID int, query *dto.GetAllQueryParams) (*dto.Pagination[dto.TransactionResponse], *domain.Error)
+	GetAllTransactionTotal(userID int, query *dto.GetAllQueryParams) (*entity.TotalTransaction, *domain.Error)
 	findAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]dto.TransactionResponse, *domain.Error)
 	getTransactionPaginationMetadata(userID int, query *dto.GetAllQueryParams) (*dto.PaginationMetadata, *domain.Error)
 	generateGetTransactionFilter(query *dto.GetAllQueryParams) (*dto.GetAllQueryParams, *domain.Error)
@@ -27,6 +28,15 @@ type transactionService struct {
 	transactionRepository TransactionRepository
 	categoryService       category.CategoryService
 	subcategoryService    subcategory.SubcategoryService
+}
+
+// GetAllTransactionTotal implements TransactionService.
+func (t *transactionService) GetAllTransactionTotal(userID int, query *dto.GetAllQueryParams) (*entity.TotalTransaction, *domain.Error) {
+	total, err := t.transactionRepository.GetAllTransactionTotal(userID, query)
+	if err != nil {
+		return nil, err
+	}
+	return total, nil
 }
 
 // GetAllPaginatedTransactions implements TransactionService.

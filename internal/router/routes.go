@@ -46,6 +46,7 @@ func (s *HTTP) RegisterFiberRoutes(app *fiber.App) {
 	transaction.Put("/:id", s.transaction.UpdateTransactionByID)
 	transaction.Get("/:id", s.transaction.GetOneTransactionByID)
 	transaction.Get("/", s.transaction.GetAllTransactions)
+	transaction.Get("/total", s.transaction.GetAllTransactionTotal)
 }
 
 func NewHTTP(

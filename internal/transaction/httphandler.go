@@ -14,10 +14,33 @@ type TransactionHandler struct {
 	validator          *validator.Validate
 }
 
+func (t *TransactionHandler) GetAllTransactionTotal(c *fiber.Ctx) error {
+	user := c.Locals("user").(*dto.ATClaims)
+
+	var query *dto.GetAllQueryParams
+	if err := c.QueryParser(query); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error(), "code": fiber.StatusBadRequest})
+	}
+
+	if err := t.validator.Struct(query); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error(), "code": fiber.StatusBadRequest})
+	}
+
+	total, err := t.transactionService.GetAllTransactionTotal(user.UserID, query)
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{"error": err.Err.Error(), "code": err.Code})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"code": fiber.StatusOK,
+		"data": total,
+	})
+}
+
 func (t *TransactionHandler) CreateTransaction(c *fiber.Ctx) error {
 	user := c.Locals("user").(*dto.ATClaims)
 
-	var req dto.CreateUpdateRequestBodyDto
+	var req *dto.CreateUpdateRequestBodyDto
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error(), "code": fiber.StatusBadRequest})
 	}
