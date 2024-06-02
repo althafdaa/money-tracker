@@ -17,13 +17,6 @@ type User struct {
 	DeletedAt         gorm.DeletedAt `json:"-"`
 }
 
-type PgUser struct {
-	ID                int64
-	Name              string
-	Email             string
-	Hash              string
-	ProfilePictureUrl string
-	CreatedAt         *time.Time
-	UpdatedAt         *time.Time
-	DeletedAt         gorm.DeletedAt
+func (User) TableName() string {
+	return "user_data"
 }

@@ -5,13 +5,13 @@ meta {
 }
 
 get {
-  url: {{hostname}}/api/v1/transaction/16
+  url: {{hostname}}/api/v1/transaction/1
   body: none
   auth: none
 }
 
 headers {
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEsIkVtYWlsIjoiYWx0aGFmZGVtaWFuZHJhYWtiYXJAZ21haWwuY29tIiwiZXhwIjoxNzE3MzEyNDkwfQ.r9N6RhM2iG7aun2N4ElOg0nV4h_NYE2I0eMEHqJklg0
+  Authorization: Bearer {{access_token}}
 }
 
 auth:basic {

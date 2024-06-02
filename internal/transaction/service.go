@@ -14,13 +14,14 @@ import (
 )
 
 type TransactionService interface {
-	CreateOneTransaction(transaction *dto.CreateUpdateTransactionDto) (*entity.TransactionResponse, *domain.Error)
-	UpdateTransactionByID(transactionID int, transaction *dto.CreateUpdateTransactionDto) (*entity.TransactionResponse, *domain.Error)
-	GetOneTransactionByID(transactionID int) (*entity.TransactionResponse, *domain.Error)
+	CreateOneTransaction(transaction *dto.CreateUpdateTransaction) (*dto.TransactionResponse, *domain.Error)
+	UpdateTransactionByID(transactionID int, transaction *dto.CreateUpdateTransaction) (*dto.TransactionResponse, *domain.Error)
+	GetOneTransactionByID(transactionID int) (*dto.TransactionResponse, *domain.Error)
 	DeleteTransactionByID(transactionID int) *domain.Error
-	FindAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]entity.TransactionResponse, *domain.Error)
-	GetTransactionPaginationMetadata(userID int, query *dto.GetAllQueryParams) (*dto.PaginationMetadata, *domain.Error)
-	generateGetTransactionFilter(query *dto.GetAllQueryParams) (*dto.FindAllTransactionFilter, *domain.Error)
+	GetAllPaginatedTransactions(userID int, query *dto.GetAllQueryParams) (*dto.Pagination[dto.TransactionResponse], *domain.Error)
+	findAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]dto.TransactionResponse, *domain.Error)
+	getTransactionPaginationMetadata(userID int, query *dto.GetAllQueryParams) (*dto.PaginationMetadata, *domain.Error)
+	generateGetTransactionFilter(query *dto.GetAllQueryParams) (*dto.GetAllQueryParams, *domain.Error)
 }
 type transactionService struct {
 	transactionRepository TransactionRepository
@@ -28,8 +29,28 @@ type transactionService struct {
 	subcategoryService    subcategory.SubcategoryService
 }
 
+// GetAllPaginatedTransactions implements TransactionService.
+func (t *transactionService) GetAllPaginatedTransactions(userID int, query *dto.GetAllQueryParams) (*dto.Pagination[dto.TransactionResponse], *domain.Error) {
+	metadata, metadataErr := t.getTransactionPaginationMetadata(userID, query)
+	if metadataErr != nil {
+		return nil, metadataErr
+	}
+
+	res, transactionErr := t.findAllTransactions(userID, query)
+
+	if transactionErr != nil {
+		return nil, transactionErr
+	}
+
+	return &dto.Pagination[dto.TransactionResponse]{
+		Code:     200,
+		Data:     *res,
+		Metadata: *metadata,
+	}, nil
+}
+
 // generateGetTransactionFilter implements TransactionService.
-func (t *transactionService) generateGetTransactionFilter(query *dto.GetAllQueryParams) (*dto.FindAllTransactionFilter, *domain.Error) {
+func (t *transactionService) generateGetTransactionFilter(query *dto.GetAllQueryParams) (*dto.GetAllQueryParams, *domain.Error) {
 	if query.StartedAt != "" && query.EndedAt == "" {
 		return nil, &domain.Error{
 			Code: 400,
@@ -56,22 +77,13 @@ func (t *transactionService) generateGetTransactionFilter(query *dto.GetAllQuery
 	}
 
 	offset := (query.Page - 1) * query.Limit
-	filter := &dto.FindAllTransactionFilter{
-		Offset:        offset,
-		Limit:         query.Limit,
-		Type:          query.Type,
-		Search:        query.Search,
-		CategoryID:    query.CategoryID,
-		SubcategoryID: query.SubcategoryID,
-		StartedAt:     query.StartedAt,
-		EndedAt:       query.EndedAt,
-	}
+	query.Offset = &offset
 
-	return filter, nil
+	return query, nil
 }
 
-// GetTransactionPaginationMetadata implements TransactionService.
-func (t *transactionService) GetTransactionPaginationMetadata(userID int, query *dto.GetAllQueryParams) (*dto.PaginationMetadata, *domain.Error) {
+// getTransactionPaginationMetadata implements TransactionService.
+func (t *transactionService) getTransactionPaginationMetadata(userID int, query *dto.GetAllQueryParams) (*dto.PaginationMetadata, *domain.Error) {
 	filter, filterErr := t.generateGetTransactionFilter(query)
 	if filterErr != nil {
 		return nil, filterErr
@@ -95,7 +107,7 @@ func (t *transactionService) GetTransactionPaginationMetadata(userID int, query 
 }
 
 // FindAllTransactions implements TransactionService.
-func (t *transactionService) FindAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]entity.TransactionResponse, *domain.Error) {
+func (t *transactionService) findAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]dto.TransactionResponse, *domain.Error) {
 	filter, filterErr := t.generateGetTransactionFilter(query)
 	if filterErr != nil {
 		return nil, filterErr
@@ -105,7 +117,7 @@ func (t *transactionService) FindAllTransactions(userID int, query *dto.GetAllQu
 		return nil, err
 	}
 
-	var transactions []entity.TransactionResponse
+	var transactions []dto.TransactionResponse
 	for _, data := range *res {
 		cat := entity.Category{
 			ID:   data.CategoryID,
@@ -123,7 +135,7 @@ func (t *transactionService) FindAllTransactions(userID int, query *dto.GetAllQu
 			}
 		}
 
-		transactions = append(transactions, entity.TransactionResponse{
+		transactions = append(transactions, dto.TransactionResponse{
 			ID:              data.ID,
 			Amount:          data.Amount,
 			UserID:          data.UserID,
@@ -143,7 +155,7 @@ func (t *transactionService) FindAllTransactions(userID int, query *dto.GetAllQu
 }
 
 // UpdateTransactionByID implements TransactionService.
-func (t *transactionService) UpdateTransactionByID(transactionID int, transaction *dto.CreateUpdateTransactionDto) (*entity.TransactionResponse, *domain.Error) {
+func (t *transactionService) UpdateTransactionByID(transactionID int, transaction *dto.CreateUpdateTransaction) (*dto.TransactionResponse, *domain.Error) {
 	cat, catErr := t.categoryService.GetOneCategoryAndSubcategoryByID(transaction.CategoryID, transaction.SubcategoryID)
 
 	if catErr != nil {
@@ -167,7 +179,7 @@ func (t *transactionService) UpdateTransactionByID(transactionID int, transactio
 		return nil, err
 	}
 
-	return &entity.TransactionResponse{
+	return &dto.TransactionResponse{
 		ID:              res.ID,
 		Amount:          res.Amount,
 		UserID:          res.UserID,
@@ -183,7 +195,7 @@ func (t *transactionService) UpdateTransactionByID(transactionID int, transactio
 }
 
 // CreateOneTransaction implements TransactionService.
-func (t *transactionService) CreateOneTransaction(transaction *dto.CreateUpdateTransactionDto) (*entity.TransactionResponse, *domain.Error) {
+func (t *transactionService) CreateOneTransaction(transaction *dto.CreateUpdateTransaction) (*dto.TransactionResponse, *domain.Error) {
 	cat_subcat, catErr := t.categoryService.GetOneCategoryAndSubcategoryByID(transaction.CategoryID, transaction.SubcategoryID)
 
 	if catErr != nil {
@@ -207,7 +219,7 @@ func (t *transactionService) CreateOneTransaction(transaction *dto.CreateUpdateT
 		return nil, err
 	}
 
-	return &entity.TransactionResponse{
+	return &dto.TransactionResponse{
 		ID:              res.ID,
 		Amount:          res.Amount,
 		UserID:          res.UserID,
@@ -222,7 +234,7 @@ func (t *transactionService) CreateOneTransaction(transaction *dto.CreateUpdateT
 	}, nil
 }
 
-func (t *transactionService) GetOneTransactionByID(transactionID int) (*entity.TransactionResponse, *domain.Error) {
+func (t *transactionService) GetOneTransactionByID(transactionID int) (*dto.TransactionResponse, *domain.Error) {
 	data, err := t.transactionRepository.GetOneTransactionByID(transactionID)
 	if err != nil {
 		if errors.Is(err.Err, gorm.ErrRecordNotFound) {
@@ -235,22 +247,27 @@ func (t *transactionService) GetOneTransactionByID(transactionID int) (*entity.T
 
 	}
 	cat := entity.Category{
-		ID:   data.CategoryID,
-		Name: data.CategoryName,
-		Slug: data.CategorySlug,
-		Type: data.CategoryType,
+		ID:        data.CategoryID,
+		Name:      data.CategoryName,
+		Slug:      data.CategorySlug,
+		Type:      data.CategoryType,
+		CreatedAt: data.CategoryCreatedAt,
+		UpdatedAt: data.CategoryUpdatedAt,
 	}
 
 	var subCat *entity.Subcategory
 	if data.SubcategoryID != nil {
 		subCat = &entity.Subcategory{
-			ID:   *data.SubcategoryID,
-			Name: *data.SubcategoryName,
-			Slug: *data.SubcategorySlug,
+			ID:        *data.SubcategoryID,
+			Name:      *data.SubcategoryName,
+			Slug:      *data.SubcategorySlug,
+			CreatedAt: data.SubcategoryCreatedAt,
+			UpdatedAt: data.SubcategoryUpdatedAt,
+			UserID:    data.UserID,
 		}
 	}
 
-	return &entity.TransactionResponse{
+	return &dto.TransactionResponse{
 		ID:              data.ID,
 		Amount:          data.Amount,
 		UserID:          data.UserID,

@@ -117,6 +117,34 @@ type Response = {
 
 ### Category
 
+#### GET /api/v1/category
+
+- Auth Required
+- Response
+
+  ```ts
+  type Response = {
+    code: 200;
+    data: Array<{
+      id: string;
+      name: string;
+      slug: string;
+      type: 'income' | 'expense';
+      created_at: string;
+      updated_at: string;
+      subcategories: Array<{
+        id: string;
+        name: string;
+        slug: string;
+        category_id: string;
+        created_at: string;
+        updated_at: string;
+        user_id: string;
+      }>;
+    }>;
+  };
+  ```
+
 #### POST /api/v1/category
 
 - Auth Required
@@ -404,11 +432,17 @@ type Response = {
         name: string;
         slug: string;
         type: 'income' | 'expense';
+        created_at: string;
+        updated_at: string;
       };
       subcategory: {
         id: string;
         name: string;
         slug: string;
+        category_id: string;
+        created_at: string;
+        updated_at: string;
+        user_id: string;
       } | null;
       transaction_at: string;
       description: string | null;

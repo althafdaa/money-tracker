@@ -30,8 +30,7 @@ func (t *TransactionHandler) CreateTransaction(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error(), "code": fiber.StatusBadRequest})
 	}
-	println("before create transaction")
-	data, transactionErr := t.transactionService.CreateOneTransaction(&dto.CreateUpdateTransactionDto{
+	data, transactionErr := t.transactionService.CreateOneTransaction(&dto.CreateUpdateTransaction{
 		Amount:        req.Amount,
 		UserID:        user.UserID,
 		CategoryID:    req.CategoryID,
@@ -99,7 +98,7 @@ func (t *TransactionHandler) UpdateTransactionByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error(), "code": fiber.StatusBadRequest})
 	}
 
-	res, transactionErr := t.transactionService.UpdateTransactionByID(transactionID, &dto.CreateUpdateTransactionDto{
+	res, transactionErr := t.transactionService.UpdateTransactionByID(transactionID, &dto.CreateUpdateTransaction{
 		Amount:        req.Amount,
 		UserID:        user.UserID,
 		CategoryID:    req.CategoryID,
@@ -131,22 +130,13 @@ func (t *TransactionHandler) GetAllTransactions(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error(), "code": fiber.StatusBadRequest})
 	}
 
-	res, transactionErr := t.transactionService.FindAllTransactions(int(user.UserID), &query)
-	if transactionErr != nil {
-		return c.Status(transactionErr.Code).JSON(fiber.Map{"error": transactionErr.Err.Error(), "code": transactionErr.Code})
+	data, err := t.transactionService.GetAllPaginatedTransactions(user.UserID, &query)
+
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{"error": err.Err.Error(), "code": err.Code})
 	}
 
-	metadata, metadataErr := t.transactionService.GetTransactionPaginationMetadata(int(user.UserID), &query)
-
-	if metadataErr != nil {
-		return c.Status(metadataErr.Code).JSON(fiber.Map{"error": metadataErr.Err.Error(), "code": metadataErr.Code})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"code":     fiber.StatusOK,
-		"data":     res,
-		"metadata": metadata,
-	})
+	return c.Status(fiber.StatusOK).JSON(data)
 }
 
 func (t *TransactionHandler) GetOneTransactionByID(c *fiber.Ctx) error {

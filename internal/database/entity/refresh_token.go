@@ -16,3 +16,7 @@ type RefreshToken struct {
 	UpdatedAt    *time.Time
 	DeletedAt    gorm.DeletedAt
 }
+
+func (RefreshToken) TableName() string {
+	return "refresh_token"
+}

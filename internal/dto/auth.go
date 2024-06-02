@@ -17,10 +17,6 @@ type GoogleUserData struct {
 	Locale         string `json:"locale"`
 }
 
-type AuthGoogleBody struct {
-	Code string `json:"code" validate:"required"`
-}
-
 type ATClaims struct {
 	UserID int
 	Email  string

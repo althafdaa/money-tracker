@@ -16,3 +16,7 @@ type Subcategory struct {
 	UpdatedAt  *time.Time     `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `json:"-"`
 }
+
+func (Subcategory) TableName() string {
+	return "subcategory"
+}

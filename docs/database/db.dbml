@@ -1,0 +1,92 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table refresh_token {
+  id int [primary key, increment]
+  user_id int
+  refresh_token varchar(255) [not null, unique]
+  access_token varchar(255) [not null, unique]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+}
+
+Table user_data {
+  id int [primary key, increment]
+  name varchar(255) [not null]
+  email varchar(255) [not null]
+  hash varchar(255) [not null]
+  profile_picture_url varchar(255)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  indexes {
+    email [name: 'user_email_index']
+  }
+}
+
+
+Ref: refresh_token.user_id > user_data.id
+
+Enum category_type_enum {
+  income
+  expense
+}
+
+Table category {
+  id int [primary key, increment]
+  name varchar(255) [not null, unique]
+  slug varchar(255) [not null,unique]
+  type category_type_enum
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  indexes {
+    type [name: 'category_type_index']
+  }
+}
+
+Table subcategory {
+   id int [primary key, increment]
+   name varchar(255) [not null]
+   slug varchar(255) [not null,unique]
+   user_id int [not null]
+   category_id int [not null]
+   created_at timestamp [not null]
+   updated_at timestamp [not null]
+   deleted_at timestamp
+}
+
+Enum transaction_type_enum {
+  income
+  expense
+}
+
+Table transaction {
+  id int [primary key, increment]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+  amount numeric(10,0) [not null]
+  description text
+  transaction_type transaction_type_enum [not  null]
+  user_id int
+  category_id int
+  subcategory_id int
+
+  indexes {
+    transaction_type [name: 'transaction_type_index']
+  }
+}
+
+Ref: transaction.user_id > user_data.id
+Ref: subcategory.user_id > user_data.id
+Ref: subcategory.category_id > category.id
+Ref: transaction.category_id - category.id
+
+
+
+
+

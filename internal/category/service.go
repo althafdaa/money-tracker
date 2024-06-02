@@ -18,7 +18,7 @@ type categoryAndSubcategory struct {
 }
 type CategoryService interface {
 	CreateCategory(body *dto.CreateCategoryBody) (*entity.Category, *domain.Error)
-	GetAllCategories(userID int) (*[]entity.CategoryWithSubcategory, *domain.Error)
+	GetAllCategories(userID int) (*[]dto.CategoryWithSubcategory, *domain.Error)
 	GetOneCategoryByID(id int) (*entity.Category, *domain.Error)
 	GetOneCategoryAndSubcategoryByID(catID int, subcatID *int) (*categoryAndSubcategory, *domain.Error)
 }
@@ -28,16 +28,16 @@ type categoryService struct {
 }
 
 // GetAllCategories implements CategoryService.
-func (c *categoryService) GetAllCategories(userID int) (*[]entity.CategoryWithSubcategory, *domain.Error) {
+func (c *categoryService) GetAllCategories(userID int) (*[]dto.CategoryWithSubcategory, *domain.Error) {
 	raw, rawErr := c.categoryRepo.FindAll(userID)
 	if rawErr != nil {
 		return nil, rawErr
 	}
 
-	var categories []entity.CategoryWithSubcategory
+	var categories []dto.CategoryWithSubcategory
 
 	for _, r := range *raw {
-		var category *entity.CategoryWithSubcategory
+		var category *dto.CategoryWithSubcategory
 		for i := range categories {
 			if categories[i].ID == r.ID {
 				category = &categories[i]
@@ -46,7 +46,7 @@ func (c *categoryService) GetAllCategories(userID int) (*[]entity.CategoryWithSu
 		}
 
 		if category == nil {
-			category = &entity.CategoryWithSubcategory{
+			category = &dto.CategoryWithSubcategory{
 				ID:        r.ID,
 				Name:      r.Name,
 				Slug:      r.Slug,
@@ -58,11 +58,11 @@ func (c *categoryService) GetAllCategories(userID int) (*[]entity.CategoryWithSu
 			categories = append(categories, *category)
 		}
 
-		if r.SubcategoryID != 0 {
+		if *r.SubcategoryID != 0 {
 			category.Subcategories = append(category.Subcategories, entity.Subcategory{
-				ID:         r.SubcategoryID,
-				Name:       r.SubcategoryName,
-				Slug:       r.SubcategorySlug,
+				ID:         *r.SubcategoryID,
+				Name:       *r.SubcategoryName,
+				Slug:       *r.SubcategorySlug,
 				CreatedAt:  r.SubcategoryCreatedAt,
 				UpdatedAt:  r.SubcategoryUpdatedAt,
 				UserID:     userID,

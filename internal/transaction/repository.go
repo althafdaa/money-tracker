@@ -12,9 +12,9 @@ import (
 
 type TransactionRepository interface {
 	CreateTransaction(transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
-	FindAllTransactions(userID int, values *dto.FindAllTransactionFilter) (*[]entity.TransactionRaw, *domain.Error)
-	FindAllTransactionsCount(userID int, values *dto.FindAllTransactionFilter) (totalDocs int, err *domain.Error)
-	findAllTransactionBuildQuery(userID int, values *dto.FindAllTransactionFilter) (string, string, []interface{})
+	FindAllTransactions(userID int, values *dto.GetAllQueryParams) (*[]entity.TransactionRaw, *domain.Error)
+	FindAllTransactionsCount(userID int, values *dto.GetAllQueryParams) (totalDocs int, err *domain.Error)
+	findAllTransactionBuildQuery(userID int, values *dto.GetAllQueryParams) (string, string, []interface{})
 	DeleteTransactionByID(transactionID int) *domain.Error
 	GetOneTransactionByID(transactionID int) (*entity.TransactionRaw, *domain.Error)
 	UpdateTransactionByID(transactionID int, transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
@@ -24,7 +24,7 @@ type transactionRepository struct {
 }
 
 // findAllTransactionBuildQuery implements TransactionRepository.
-func (t *transactionRepository) findAllTransactionBuildQuery(userID int, values *dto.FindAllTransactionFilter) (string, string, []interface{}) {
+func (t *transactionRepository) findAllTransactionBuildQuery(userID int, values *dto.GetAllQueryParams) (string, string, []interface{}) {
 	args := make([]interface{}, 0)
 	args = append(args, userID)
 
@@ -75,7 +75,7 @@ func (t *transactionRepository) findAllTransactionBuildQuery(userID int, values 
 }
 
 // findAllTransactionsCount implements TransactionRepository.
-func (t *transactionRepository) FindAllTransactionsCount(userID int, values *dto.FindAllTransactionFilter) (totalDocs int, err *domain.Error) {
+func (t *transactionRepository) FindAllTransactionsCount(userID int, values *dto.GetAllQueryParams) (totalDocs int, err *domain.Error) {
 	var count int64
 	_, whereClause, args := t.findAllTransactionBuildQuery(userID, values)
 	query := fmt.Sprintf(`
@@ -96,7 +96,7 @@ func (t *transactionRepository) FindAllTransactionsCount(userID int, values *dto
 }
 
 // FindAllTransactions implements TransactionRepository.
-func (t *transactionRepository) FindAllTransactions(userID int, values *dto.FindAllTransactionFilter) (*[]entity.TransactionRaw, *domain.Error) {
+func (t *transactionRepository) FindAllTransactions(userID int, values *dto.GetAllQueryParams) (*[]entity.TransactionRaw, *domain.Error) {
 
 	var raw []entity.TransactionRaw
 	query, _, args := t.findAllTransactionBuildQuery(userID, values)
@@ -120,21 +120,25 @@ func (t *transactionRepository) GetOneTransactionByID(transactionID int) (*entit
 	var data entity.TransactionRaw
 	query := `
 	SELECT
-	t.*,
-	c.name as category_name,
-	c.slug as category_slug,
-	c.type as category_type,
-	
-	s."name" AS subcategory_name,
-	s.slug as subcategory_slug
-FROM
-	"transaction" t
-JOIN
-	category c ON t.category_id = c.id
-LEFT JOIN
-	subcategory s ON t.subcategory_id = s.id
-WHERE
-	t.deleted_at is null and t.id = ?
+		t.*,
+		c.name as category_name,
+		c.slug as category_slug,
+		c.type as category_type,
+		c.created_at as category_created_at,
+		c.updated_at as category_updated_at,
+		
+		s."name" AS subcategory_name,
+		s.slug as subcategory_slug,
+		s.created_at as subcategory_created_at,
+		s.updated_at as subcategory_updated_at
+	FROM
+		"transaction" t
+	JOIN
+		category c ON t.category_id = c.id
+	LEFT JOIN
+		subcategory s ON t.subcategory_id = s.id
+	WHERE
+		t.deleted_at is null and t.id = ?
 `
 	err := t.db.Raw(query, transactionID).First(&data).Error
 

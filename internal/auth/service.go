@@ -9,6 +9,7 @@ import (
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
 	refreshtoken "money-tracker/internal/refresh_token"
+	"money-tracker/internal/user"
 	"money-tracker/internal/utils"
 	"net/http"
 	"os"
@@ -20,20 +21,93 @@ import (
 )
 
 type AuthService interface {
-	ExchangeToken(code string) (*oauth2.Token, *domain.Error)
-	ParseTokenToUser(token string) (*dto.GoogleUserData, *domain.Error)
-	GenerateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error)
-	GenerateAndUpdateNewToken(user *entity.User, refreshTokenID int) (*dto.AuthResponse, *domain.Error)
+	exchangeToken(code string) (*oauth2.Token, *domain.Error)
+	parseTokenToUser(token string) (*dto.GoogleUserData, *domain.Error)
+	generateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error)
+	generateAndUpdateNewToken(user *entity.User, refreshTokenID int) (*dto.AuthResponse, *domain.Error)
 	tokenGenerator(user *entity.User) (*dto.NewTokenDto, *domain.Error)
+	LoginWithGoogle(code string) (*dto.AuthResponse, *domain.Error)
+	RefreshToken(refreshToken string) (*dto.AuthResponse, *domain.Error)
+	GenerateGoogleLoginUrl() string
 }
 
 type authService struct {
 	refreshTokenService refreshtoken.RefreshTokenService
 	config              *config.Config
+	userService         user.UserService
 }
 
-// GenerateAndUpdateNewToken implements AuthService.
-func (a *authService) GenerateAndUpdateNewToken(user *entity.User, refreshTokenID int) (*dto.AuthResponse, *domain.Error) {
+// GenerateGoogleLoginUrl implements AuthService.
+func (a *authService) GenerateGoogleLoginUrl() string {
+	state := os.Getenv("GOOGLE_STATE")
+	url := a.config.GoogleOauthConfig().AuthCodeURL(state)
+	return url
+}
+
+// RefreshToken implements AuthService.
+func (a *authService) RefreshToken(refreshToken string) (*dto.AuthResponse, *domain.Error) {
+	refresh, err := a.refreshTokenService.CheckRefreshTokenValidity(refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := a.userService.GetOneUserFromID(int(refresh.UserID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	newToken, err := a.generateAndUpdateNewToken(user, refresh.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return newToken, nil
+}
+
+// LoginWithGoogle implements AuthService.
+func (a *authService) LoginWithGoogle(code string) (*dto.AuthResponse, *domain.Error) {
+	token, tokenErr := a.exchangeToken(code)
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	googleUserData, userErr := a.parseTokenToUser(token.AccessToken)
+
+	if userErr != nil {
+		return nil, userErr
+	}
+	checkedUser, existErr := a.userService.CheckEmail(googleUserData.Email)
+
+	if existErr != nil {
+		return nil, existErr
+	}
+
+	if checkedUser != nil {
+		token, err := a.generateNewToken(checkedUser)
+		if err != nil {
+			return nil, err
+		}
+		return token, nil
+	} else {
+		newUser, newUserErr := a.userService.CreateUserFromGoogle(googleUserData)
+		if newUserErr != nil {
+			return nil, newUserErr
+		}
+
+		token, newTokenErr := a.generateNewToken(newUser)
+
+		if newTokenErr != nil {
+			return nil, newTokenErr
+		}
+
+		return token, nil
+	}
+}
+
+// generateAndUpdateNewToken implements AuthService.
+func (a *authService) generateAndUpdateNewToken(user *entity.User, refreshTokenID int) (*dto.AuthResponse, *domain.Error) {
 	token, err := a.tokenGenerator(user)
 	if err != nil {
 		return nil, err
@@ -97,7 +171,7 @@ func (a *authService) tokenGenerator(user *entity.User) (*dto.NewTokenDto, *doma
 }
 
 // GenerateToken implements AuthService.
-func (a *authService) GenerateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error) {
+func (a *authService) generateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error) {
 	newToken, tokenERr := a.tokenGenerator(user)
 
 	if tokenERr != nil {
@@ -126,7 +200,7 @@ func (a *authService) GenerateNewToken(user *entity.User) (*dto.AuthResponse, *d
 }
 
 // ParseTokenToUser implements AuthService.
-func (a *authService) ParseTokenToUser(token string) (*dto.GoogleUserData, *domain.Error) {
+func (a *authService) parseTokenToUser(token string) (*dto.GoogleUserData, *domain.Error) {
 	resp, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token)
 	if err != nil {
 		return nil, &domain.Error{
@@ -154,7 +228,7 @@ func (a *authService) ParseTokenToUser(token string) (*dto.GoogleUserData, *doma
 }
 
 // ExchangeToken implements AuthService.
-func (a *authService) ExchangeToken(code string) (*oauth2.Token, *domain.Error) {
+func (a *authService) exchangeToken(code string) (*oauth2.Token, *domain.Error) {
 	token, err := a.config.GoogleOauthConfig().Exchange(context.Background(), code)
 	if err != nil {
 		return nil, &domain.Error{
@@ -168,9 +242,11 @@ func (a *authService) ExchangeToken(code string) (*oauth2.Token, *domain.Error) 
 func NewAuthService(
 	refreshTokenService refreshtoken.RefreshTokenService,
 	config *config.Config,
+	userService user.UserService,
 ) AuthService {
 	return &authService{
 		refreshTokenService,
 		config,
+		userService,
 	}
 }
