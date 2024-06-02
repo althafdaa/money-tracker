@@ -13,10 +13,35 @@ import (
 type CategoryRepository interface {
 	CreateOne(body *dto.CreateCategoryRepoBody) (*entity.Category, *domain.Error)
 	UpdateOne(id int, body *dto.CreateCategoryRepoBody) (*entity.Category, *domain.Error)
+	FindAll(userID int, filter *dto.CategoryFilters) (*[]entity.Category, *domain.Error)
+	GetOne(id int) (*entity.Category, *domain.Error)
 	DeleteOne(id int) *domain.Error
 }
 type categoryRepository struct {
 	db *gorm.DB
+}
+
+// GetOne implements CategoryRepository.
+func (c *categoryRepository) GetOne(id int) (*entity.Category, *domain.Error) {
+	var category entity.Category
+	err := c.db.Table("category").Where("id = ?", id).First(&category).Error
+
+	if err != nil {
+		return nil, &domain.Error{
+			Code: 500,
+			Err:  err,
+		}
+	}
+
+	return &category, nil
+}
+
+// FindAll implements CategoryRepository.
+func (c *categoryRepository) FindAll(userID int, filter *dto.CategoryFilters) (*[]entity.Category, *domain.Error) {
+	args := make([]interface{}, 0)
+
+	println(args)
+	panic("unimplemented")
 }
 
 // CreateOne implements CategoryRepository.
@@ -31,7 +56,7 @@ func (c *categoryRepository) CreateOne(body *dto.CreateCategoryRepoBody) (*entit
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, &domain.Error{
-				Code: 400,
+				Code: 404,
 				Err:  errors.New("CATEGORY_ALREADY_EXISTS"),
 			}
 		}

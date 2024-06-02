@@ -1,6 +1,10 @@
 package dto
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type GoogleUserData struct {
 	ID             string `json:"id"`
@@ -18,7 +22,7 @@ type AuthGoogleBody struct {
 }
 
 type ATClaims struct {
-	UserID int64
+	UserID int
 	Email  string
 	jwt.RegisteredClaims
 }
@@ -29,4 +33,12 @@ type AuthResponse struct {
 	RefreshToken          string `json:"refresh_token"`
 	AccessTokenExpiresIn  int    `json:"access_token_expires_in"`
 	RefreshTokenExpiresIn int    `json:"refresh_token_expires_in"`
+}
+
+type NewTokenDto struct {
+	AccessToken           string
+	TokenType             string
+	RefreshToken          string
+	AccessTokenExpiresIn  time.Time
+	RefreshTokenExpiresIn time.Time
 }

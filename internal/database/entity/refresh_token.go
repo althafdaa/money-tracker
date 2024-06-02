@@ -7,10 +7,10 @@ import (
 )
 
 type RefreshToken struct {
-	ID           int64
+	ID           int
 	AccessToken  string
 	RefreshToken string
-	UserID       int64
+	UserID       int
 	ExpiredAt    *time.Time
 	CreatedAt    *time.Time
 	UpdatedAt    *time.Time

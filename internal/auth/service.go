@@ -23,6 +23,8 @@ type AuthService interface {
 	ExchangeToken(code string) (*oauth2.Token, *domain.Error)
 	ParseTokenToUser(token string) (*dto.GoogleUserData, *domain.Error)
 	GenerateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error)
+	GenerateAndUpdateNewToken(user *entity.User, refreshTokenID int) (*dto.AuthResponse, *domain.Error)
+	tokenGenerator(user *entity.User) (*dto.NewTokenDto, *domain.Error)
 }
 
 type authService struct {
@@ -30,8 +32,37 @@ type authService struct {
 	config              *config.Config
 }
 
-// GenerateToken implements AuthService.
-func (a *authService) GenerateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error) {
+// GenerateAndUpdateNewToken implements AuthService.
+func (a *authService) GenerateAndUpdateNewToken(user *entity.User, refreshTokenID int) (*dto.AuthResponse, *domain.Error) {
+	token, err := a.tokenGenerator(user)
+	if err != nil {
+		return nil, err
+	}
+	now := time.Now()
+	data, dataErr := a.refreshTokenService.UpdateRefreshTokenByRefreshTokenID(refreshTokenID, &entity.RefreshToken{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		ExpiredAt:    &token.RefreshTokenExpiresIn,
+		UpdatedAt:    &now,
+		UserID:       user.ID,
+	})
+
+	if dataErr != nil {
+		return nil, dataErr
+	}
+
+	return &dto.AuthResponse{
+		AccessToken:           data.AccessToken,
+		TokenType:             "Bearer",
+		RefreshToken:          data.RefreshToken,
+		AccessTokenExpiresIn:  int(data.ExpiredAt.Unix()),
+		RefreshTokenExpiresIn: int(data.ExpiredAt.Unix()),
+	}, nil
+
+}
+
+// tokenGenerator implements AuthService.
+func (a *authService) tokenGenerator(user *entity.User) (*dto.NewTokenDto, *domain.Error) {
 	secret := os.Getenv("JWT_SECRET")
 	expiredTime := time.Now().Add(time.Minute * 60)
 	claims := &dto.ATClaims{
@@ -56,11 +87,28 @@ func (a *authService) GenerateNewToken(user *entity.User) (*dto.AuthResponse, *d
 	expiredRefreshTime := time.Now().Add(time.Hour * 24 * 7)
 	refreshToken := utils.GenerateRandomCode(32)
 
+	return &dto.NewTokenDto{
+		AccessToken:           accessToken,
+		TokenType:             "Bearer",
+		RefreshToken:          refreshToken,
+		AccessTokenExpiresIn:  expiredTime,
+		RefreshTokenExpiresIn: expiredRefreshTime,
+	}, nil
+}
+
+// GenerateToken implements AuthService.
+func (a *authService) GenerateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error) {
+	newToken, tokenERr := a.tokenGenerator(user)
+
+	if tokenERr != nil {
+		return nil, tokenERr
+	}
+
 	_, err := a.refreshTokenService.GenerateRefreshToken(&entity.RefreshToken{
 		UserID:       user.ID,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		ExpiredAt:    &expiredRefreshTime,
+		AccessToken:  newToken.AccessToken,
+		RefreshToken: newToken.RefreshToken,
+		ExpiredAt:    &newToken.RefreshTokenExpiresIn,
 	})
 
 	if err != nil {
@@ -68,11 +116,11 @@ func (a *authService) GenerateNewToken(user *entity.User) (*dto.AuthResponse, *d
 	}
 
 	return &dto.AuthResponse{
-		AccessToken:           accessToken,
-		TokenType:             "Bearer",
-		RefreshToken:          refreshToken,
-		AccessTokenExpiresIn:  int(expiredTime.Unix()),
-		RefreshTokenExpiresIn: int(expiredRefreshTime.Unix()),
+		AccessToken:           newToken.AccessToken,
+		TokenType:             newToken.TokenType,
+		RefreshToken:          newToken.RefreshToken,
+		AccessTokenExpiresIn:  int(newToken.AccessTokenExpiresIn.Unix()),
+		RefreshTokenExpiresIn: int(newToken.RefreshTokenExpiresIn.Unix()),
 	}, nil
 
 }

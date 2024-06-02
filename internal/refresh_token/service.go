@@ -11,11 +11,21 @@ import (
 
 type RefreshTokenService interface {
 	GenerateRefreshToken(*entity.RefreshToken) (*entity.RefreshToken, *domain.Error)
+	UpdateRefreshTokenByRefreshTokenID(refreshTokenID int, refresh *entity.RefreshToken) (*entity.RefreshToken, *domain.Error)
 	CheckRefreshTokenValidity(string) (*entity.RefreshToken, *domain.Error)
 	LogoutRefreshToken(string) *domain.Error
 }
 type refreshTokenService struct {
 	refreshTokenRepository RefreshTokenRepository
+}
+
+// UpdateRefreshTokenByRefreshTokenID implements RefreshTokenService.
+func (r *refreshTokenService) UpdateRefreshTokenByRefreshTokenID(refreshTokenID int, refresh *entity.RefreshToken) (*entity.RefreshToken, *domain.Error) {
+	data, err := r.refreshTokenRepository.UpdateRefreshTokenByID(refreshTokenID, refresh)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // LogoutRefreshToken implements RefreshTokenService.

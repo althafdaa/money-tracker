@@ -38,9 +38,9 @@ func (h *CategoryHandler) CreateCategory(c *fiber.Ctx) error {
 	res, resErr := h.categoryService.CreateCategory(&body)
 
 	if resErr != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.Status(resErr.Code).JSON(fiber.Map{
 			"error": resErr.Err.Error(),
-			"code":  fiber.ErrInternalServerError,
+			"code":  resErr.Code,
 		})
 	}
 

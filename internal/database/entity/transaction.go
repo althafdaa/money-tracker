@@ -14,23 +14,37 @@ const (
 )
 
 type Transaction struct {
-	ID              int64           `json:"id"`
-	Amount          int64           `json:"amount"`
-	UserID          int64           `json:"user_id"`
-	CategoryID      int64           `json:"category_id"`
+	ID              int             `json:"id"`
+	Amount          int             `json:"amount"`
+	CategoryID      int             `json:"category_id"`
 	TransactionType TransactionType `json:"transaction_type"`
 	TransactionAt   time.Time       `json:"transaction_at"`
-	SubcategoryID   *int64          `json:"subcategory_id"`
+	SubcategoryID   *int            `json:"subcategory_id"`
 	Description     *string         `json:"description"`
 	CreatedAt       *time.Time      `json:"created_at"`
 	UpdatedAt       *time.Time      `json:"updated_at"`
-	DeletedAt       gorm.DeletedAt
+	UserID          int             `json:"-"`
+	DeletedAt       gorm.DeletedAt  `json:"-"`
+}
+
+type TransactionResponse struct {
+	ID              int             `json:"id"`
+	Amount          int             `json:"amount"`
+	UserID          int             `json:"-"`
+	TransactionType TransactionType `json:"transaction_type"`
+	TransactionAt   time.Time       `json:"transaction_at"`
+	Category        Category        `json:"category"`
+	Subcategory     *Subcategory    `json:"subcategory"`
+	Description     *string         `json:"description"`
+	CreatedAt       *time.Time      `json:"created_at"`
+	UpdatedAt       *time.Time      `json:"updated_at"`
+	DeletedAt       gorm.DeletedAt  `json:"-"`
 }
 
 type TransactionRaw struct {
-	ID     int64 `json:"id"`
-	Amount int64 `json:"amount"`
-	UserID int64 `json:"user_id"`
+	ID     int `json:"id"`
+	Amount int `json:"amount"`
+	UserID int `json:"user_id"`
 
 	CategoryID   int          `json:"category_id"`
 	CategorySlug string       `json:"category_slug"`
@@ -46,19 +60,5 @@ type TransactionRaw struct {
 	Description     *string         `json:"description"`
 	CreatedAt       *time.Time      `json:"created_at"`
 	UpdatedAt       *time.Time      `json:"updated_at"`
-	DeletedAt       gorm.DeletedAt
-}
-
-type PgTransaction struct {
-	ID              int64
-	Amount          int64
-	UserID          int64
-	Category        PgCategory
-	TransactionType TransactionType
-	TransactionAt   time.Time
-	Subcategory     *PgSubcategory
-	Description     *string
-	CreatedAt       *time.Time
-	UpdatedAt       *time.Time
-	DeletedAt       gorm.DeletedAt
+	DeletedAt       gorm.DeletedAt  `json:"-"`
 }

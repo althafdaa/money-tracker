@@ -12,9 +12,25 @@ type RefreshTokenRepository interface {
 	GetOneByRefreshToken(token string) (*entity.RefreshToken, *domain.Error)
 	DeleteByRefreshToken(token string) *domain.Error
 	DeleteByAccessToken(token string) *domain.Error
+	UpdateRefreshTokenByID(refreshTokenID int, refresh *entity.RefreshToken) (*entity.RefreshToken, *domain.Error)
 }
 type refreshTokenRepository struct {
 	db *gorm.DB
+}
+
+// UpdateRefreshTokenByID implements RefreshTokenRepository.
+func (r *refreshTokenRepository) UpdateRefreshTokenByID(refreshTokenID int, refresh *entity.RefreshToken) (*entity.RefreshToken, *domain.Error) {
+	var updatedToken entity.RefreshToken
+	err := r.db.Table("refresh_token").Save(refresh).Scan(&updatedToken).Error
+
+	if err != nil {
+		return nil, &domain.Error{
+			Code: 500,
+			Err:  err,
+		}
+	}
+
+	return &updatedToken, nil
 }
 
 // GetOneByRefreshToken implements RefreshTokenRepository.

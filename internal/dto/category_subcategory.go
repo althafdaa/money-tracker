@@ -19,3 +19,15 @@ type SubcategoryBody struct {
 	CategoryID int    `json:"category_id"`
 	UserID     int    `json:"user_id"`
 }
+
+type CategoryFilters struct {
+	Type entity.CategoryType `json:"type"`
+}
+
+type CreateUpdateRequestBodyDto struct {
+	Amount        int     `json:"amount" validate:"required,numeric"`
+	CategoryID    int     `json:"category_id" validate:"required,numeric"`
+	TransactionAt string  `json:"transaction_at" validate:"required,datetime=2006-01-02"`
+	SubcategoryID *int    `json:"subcategory_id" validate:"omitempty,numeric"`
+	Description   *string `json:"description" validate:"omitempty,max=255"`
+}

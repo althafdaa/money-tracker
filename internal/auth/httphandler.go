@@ -208,7 +208,7 @@ func (a *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 		})
 	}
 
-	newToken, err := a.authService.GenerateNewToken(user)
+	newToken, err := a.authService.GenerateAndUpdateNewToken(user, refresh.ID)
 
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{

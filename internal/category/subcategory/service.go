@@ -11,9 +11,21 @@ type SubcategoryService interface {
 	CreateSubcategory(body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error)
 	DeleteSubcategoryByID(id int) *domain.Error
 	UpdateSubcategoryByID(id int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error)
+	GetOneSubcategoryByID(id int) (*entity.Subcategory, *domain.Error)
 }
 type subcategoryService struct {
 	subcategoryRepository SubcategoryRepository
+}
+
+// GetOneSubcategoryByID implements SubcategoryService.
+func (s *subcategoryService) GetOneSubcategoryByID(id int) (*entity.Subcategory, *domain.Error) {
+	res, resErr := s.subcategoryRepository.GetOneByID(id)
+
+	if resErr != nil {
+		return nil, resErr
+	}
+
+	return res, nil
 }
 
 // CreateSubcategory implements SubcategoryService.
