@@ -82,7 +82,7 @@ type Response = {
 ```ts
 type Response = {
   code: 200;
-  data: 'LOGGED_SUCCESS';
+  data: 'LOGOUT_SUCCESS';
 };
 ```
 

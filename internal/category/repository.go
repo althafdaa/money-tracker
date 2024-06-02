@@ -1,7 +1,6 @@
 package category
 
 import (
-	"errors"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
@@ -13,7 +12,7 @@ import (
 type CategoryRepository interface {
 	CreateOne(body *dto.CreateCategoryRepoBody) (*entity.Category, *domain.Error)
 	UpdateOne(id int, body *dto.CreateCategoryRepoBody) (*entity.Category, *domain.Error)
-	FindAll(userID int, filter *dto.CategoryFilters) (*[]entity.Category, *domain.Error)
+	FindAll(userID int) (*[]entity.CategoryWithSubcategoryRaw, *domain.Error)
 	GetOne(id int) (*entity.Category, *domain.Error)
 	DeleteOne(id int) *domain.Error
 }
@@ -37,11 +36,36 @@ func (c *categoryRepository) GetOne(id int) (*entity.Category, *domain.Error) {
 }
 
 // FindAll implements CategoryRepository.
-func (c *categoryRepository) FindAll(userID int, filter *dto.CategoryFilters) (*[]entity.Category, *domain.Error) {
+func (c *categoryRepository) FindAll(userID int) (*[]entity.CategoryWithSubcategoryRaw, *domain.Error) {
 	args := make([]interface{}, 0)
+	var category []entity.CategoryWithSubcategoryRaw
+	query := `
+		select 
+			c.*,
+			s.id as subcategory_id,
+			s."name" as subcategory_name,
+			s.slug as subcategory_slug,
+			s.created_at as subcategory_created_at,
+			s.updated_at as subcategory_updated_at
+		FROM
+			category c
+		LEFT JOIN
+			subcategory s ON c.id = s.category_id
+		WHERE
+			s.user_id = ?
+	`
+	args = append(args, userID)
 
-	println(args)
-	panic("unimplemented")
+	err := c.db.Raw(query, args...).Scan(&category).Error
+
+	if err != nil {
+		return nil, &domain.Error{
+			Code: 500,
+			Err:  err,
+		}
+	}
+
+	return &category, nil
 }
 
 // CreateOne implements CategoryRepository.
@@ -51,15 +75,9 @@ func (c *categoryRepository) CreateOne(body *dto.CreateCategoryRepoBody) (*entit
 		Name: body.Name,
 		Slug: body.Slug,
 		Type: body.Type,
-	}).Error
+	}).Scan(&category).Error
 
 	if err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return nil, &domain.Error{
-				Code: 404,
-				Err:  errors.New("CATEGORY_ALREADY_EXISTS"),
-			}
-		}
 		return nil, &domain.Error{
 			Err:  err,
 			Code: 500,

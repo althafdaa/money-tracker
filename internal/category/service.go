@@ -18,12 +18,61 @@ type categoryAndSubcategory struct {
 }
 type CategoryService interface {
 	CreateCategory(body *dto.CreateCategoryBody) (*entity.Category, *domain.Error)
+	GetAllCategories(userID int) (*[]entity.CategoryWithSubcategory, *domain.Error)
 	GetOneCategoryByID(id int) (*entity.Category, *domain.Error)
 	GetOneCategoryAndSubcategoryByID(catID int, subcatID *int) (*categoryAndSubcategory, *domain.Error)
 }
 type categoryService struct {
 	categoryRepo       CategoryRepository
 	subcategoryService subcategory.SubcategoryService
+}
+
+// GetAllCategories implements CategoryService.
+func (c *categoryService) GetAllCategories(userID int) (*[]entity.CategoryWithSubcategory, *domain.Error) {
+	raw, rawErr := c.categoryRepo.FindAll(userID)
+	if rawErr != nil {
+		return nil, rawErr
+	}
+
+	var categories []entity.CategoryWithSubcategory
+
+	for _, r := range *raw {
+		var category *entity.CategoryWithSubcategory
+		for i := range categories {
+			if categories[i].ID == r.ID {
+				category = &categories[i]
+				break
+			}
+		}
+
+		if category == nil {
+			category = &entity.CategoryWithSubcategory{
+				ID:        r.ID,
+				Name:      r.Name,
+				Slug:      r.Slug,
+				Type:      r.Type,
+				CreatedAt: r.CreatedAt,
+				UpdatedAt: r.UpdatedAt,
+				DeletedAt: r.DeletedAt,
+			}
+			categories = append(categories, *category)
+		}
+
+		if r.SubcategoryID != 0 {
+			category.Subcategories = append(category.Subcategories, entity.Subcategory{
+				ID:         r.SubcategoryID,
+				Name:       r.SubcategoryName,
+				Slug:       r.SubcategorySlug,
+				CreatedAt:  r.SubcategoryCreatedAt,
+				UpdatedAt:  r.SubcategoryUpdatedAt,
+				UserID:     userID,
+				CategoryID: r.ID,
+			})
+
+		}
+	}
+
+	return &categories, nil
 }
 
 // GetOneCategoryAndSubcategoryByID implements CategoryService.
@@ -87,6 +136,12 @@ func (c *categoryService) CreateCategory(body *dto.CreateCategoryBody) (*entity.
 	res, resErr := c.categoryRepo.CreateOne(&dto.CreateCategoryRepoBody{Name: body.Name, Slug: slug, Type: body.Type})
 
 	if resErr != nil {
+		if errors.Is(resErr.Err, gorm.ErrDuplicatedKey) {
+			return nil, &domain.Error{
+				Code: 404,
+				Err:  errors.New("CATEGORY_ALREADY_EXISTS"),
+			}
+		}
 		return nil, resErr
 	}
 

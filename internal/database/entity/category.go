@@ -1,5 +1,11 @@
 package entity
 
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+
 type CategoryType string
 
 const (
@@ -8,15 +14,39 @@ const (
 )
 
 type Category struct {
-	ID   int          `json:"id"`
-	Name string       `json:"name"`
-	Slug string       `json:"slug"`
-	Type CategoryType `json:"type"`
+	ID        int            `json:"id"`
+	Name      string         `json:"name"`
+	Slug      string         `json:"slug"`
+	Type      CategoryType   `json:"type"`
+	CreatedAt *time.Time     `json:"created_at"`
+	UpdatedAt *time.Time     `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"-"`
 }
 
-type PgCategory struct {
-	ID   int
-	Name string
-	Slug string
-	Type CategoryType
+type CategoryWithSubcategoryRaw struct {
+	ID        int            `json:"id"`
+	Name      string         `json:"name"`
+	Slug      string         `json:"slug"`
+	Type      CategoryType   `json:"type"`
+	CreatedAt *time.Time     `json:"created_at"`
+	UpdatedAt *time.Time     `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"-"`
+
+	SubcategoryID        int            `json:"subcategory_id"`
+	SubcategoryName      string         `json:"subcategory_name"`
+	SubcategorySlug      string         `json:"subcategory_slug"`
+	SubcategoryCreatedAt *time.Time     `json:"subcategory_created_at"`
+	SubcategoryUpdatedAt *time.Time     `json:"subcategory_updated_at"`
+	SubcategoryDeletedAt gorm.DeletedAt `json:"-"`
+}
+
+type CategoryWithSubcategory struct {
+	ID            int            `json:"id"`
+	Name          string         `json:"name"`
+	Slug          string         `json:"slug"`
+	Type          CategoryType   `json:"type"`
+	CreatedAt     *time.Time     `json:"created_at"`
+	UpdatedAt     *time.Time     `json:"updated_at"`
+	DeletedAt     gorm.DeletedAt `json:"-"`
+	Subcategories []Subcategory  `json:"subcategories"`
 }

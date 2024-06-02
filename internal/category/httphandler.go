@@ -78,7 +78,7 @@ func (h *CategoryHandler) CreateSubcategory(c *fiber.Ctx) error {
 	res, createError := h.subcategoryService.CreateSubcategory(&dto.SubcategoryBody{
 		Name:       body.Name,
 		CategoryID: body.CategoryID,
-		UserID:     int(user.UserID),
+		UserID:     user.UserID,
 	})
 
 	if createError != nil {
@@ -162,6 +162,23 @@ func (h *CategoryHandler) UpdateSubcategoryByID(c *fiber.Ctx) error {
 		"data": res,
 	})
 
+}
+
+func (h *CategoryHandler) GetAllCategories(c *fiber.Ctx) error {
+	user := c.Locals("user").(*dto.ATClaims)
+	res, resErr := h.categoryService.GetAllCategories(user.UserID)
+
+	if resErr != nil {
+		return c.Status(resErr.Code).JSON(fiber.Map{
+			"error": resErr.Err.Error(),
+			"code":  resErr.Code,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"code": fiber.StatusOK,
+		"data": res,
+	})
 }
 
 func NewCategoryHandler(

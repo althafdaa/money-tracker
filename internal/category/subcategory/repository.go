@@ -1,7 +1,6 @@
 package subcategory
 
 import (
-	"errors"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
@@ -42,15 +41,10 @@ func (s *subcategoryRepository) CreateOne(body *dto.SubcategoryBody) (*entity.Su
 		Name:       body.Name,
 		Slug:       body.Slug,
 		CategoryID: body.CategoryID,
+		UserID:     body.UserID,
 	}).Scan(&subcategory).Error
 
 	if err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return nil, &domain.Error{
-				Code: 400,
-				Err:  errors.New("SUBCATEGORY_ALREADY_EXISTS"),
-			}
-		}
 		return nil, &domain.Error{
 			Err:  err,
 			Code: 500,

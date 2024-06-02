@@ -1,10 +1,15 @@
 package subcategory
 
 import (
+	"errors"
+	"fmt"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
 	"money-tracker/internal/utils"
+	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type SubcategoryService interface {
@@ -38,14 +43,22 @@ func (s *subcategoryService) CreateSubcategory(body *dto.SubcategoryBody) (*enti
 		}
 	}
 
+	subcategorSlug := fmt.Sprintf("%s-%s-%s", slug, strconv.Itoa(body.CategoryID), strconv.Itoa(body.UserID))
+
 	res, resErr := s.subcategoryRepository.CreateOne(&dto.SubcategoryBody{
 		Name:       body.Name,
-		Slug:       slug,
+		Slug:       subcategorSlug,
 		CategoryID: body.CategoryID,
 		UserID:     body.UserID,
 	})
 
 	if resErr != nil {
+		if errors.Is(resErr.Err, gorm.ErrDuplicatedKey) {
+			return nil, &domain.Error{
+				Code: 400,
+				Err:  errors.New("SUBCATEGORY_ALREADY_EXISTS"),
+			}
+		}
 		return nil, resErr
 	}
 
