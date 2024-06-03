@@ -23,11 +23,12 @@ import (
 type AuthService interface {
 	exchangeToken(code string) (*oauth2.Token, *domain.Error)
 	parseTokenToUser(token string) (*dto.GoogleUserData, *domain.Error)
-	generateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error)
-	generateAndUpdateNewToken(user *entity.User, refreshTokenID int) (*dto.AuthResponse, *domain.Error)
+	generateNewToken(user *entity.User) (*dto.TokenResponse, *domain.Error)
+	generateAndUpdateNewToken(user *entity.User, refreshTokenID int) (*dto.TokenResponse, *domain.Error)
 	tokenGenerator(user *entity.User) (*dto.NewTokenDto, *domain.Error)
-	LoginWithGoogle(code string) (*dto.AuthResponse, *domain.Error)
-	RefreshToken(refreshToken string) (*dto.AuthResponse, *domain.Error)
+	LoginWithGoogle(code string) (*dto.TokenResponse, *domain.Error)
+	RefreshToken(refreshToken string) (*dto.TokenResponse, *domain.Error)
+	GetSelf(user *dto.ATClaims) (*dto.SelfResponse, *domain.Error)
 	GenerateGoogleLoginUrl() string
 }
 
@@ -35,6 +36,22 @@ type authService struct {
 	refreshTokenService refreshtoken.RefreshTokenService
 	config              *config.Config
 	userService         user.UserService
+}
+
+// GetSelf implements AuthService.
+func (a *authService) GetSelf(user *dto.ATClaims) (*dto.SelfResponse, *domain.Error) {
+	data, err := a.userService.GetOneUserFromID(user.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.SelfResponse{
+		User: *data,
+		Token: dto.ExpirationResponse{
+			AccessTokenExpiresIn:  int(user.ExpiresAt.Time.Unix()),
+			RefreshTokenExpiresIn: int(user.ExpiresAt.Time.Unix()),
+		},
+	}, nil
 }
 
 // GenerateGoogleLoginUrl implements AuthService.
@@ -45,7 +62,7 @@ func (a *authService) GenerateGoogleLoginUrl() string {
 }
 
 // RefreshToken implements AuthService.
-func (a *authService) RefreshToken(refreshToken string) (*dto.AuthResponse, *domain.Error) {
+func (a *authService) RefreshToken(refreshToken string) (*dto.TokenResponse, *domain.Error) {
 	refresh, err := a.refreshTokenService.CheckRefreshTokenValidity(refreshToken)
 	if err != nil {
 		return nil, err
@@ -67,7 +84,7 @@ func (a *authService) RefreshToken(refreshToken string) (*dto.AuthResponse, *dom
 }
 
 // LoginWithGoogle implements AuthService.
-func (a *authService) LoginWithGoogle(code string) (*dto.AuthResponse, *domain.Error) {
+func (a *authService) LoginWithGoogle(code string) (*dto.TokenResponse, *domain.Error) {
 	token, tokenErr := a.exchangeToken(code)
 	if tokenErr != nil {
 		return nil, tokenErr
@@ -107,7 +124,7 @@ func (a *authService) LoginWithGoogle(code string) (*dto.AuthResponse, *domain.E
 }
 
 // generateAndUpdateNewToken implements AuthService.
-func (a *authService) generateAndUpdateNewToken(user *entity.User, refreshTokenID int) (*dto.AuthResponse, *domain.Error) {
+func (a *authService) generateAndUpdateNewToken(user *entity.User, refreshTokenID int) (*dto.TokenResponse, *domain.Error) {
 	token, err := a.tokenGenerator(user)
 	if err != nil {
 		return nil, err
@@ -125,12 +142,14 @@ func (a *authService) generateAndUpdateNewToken(user *entity.User, refreshTokenI
 		return nil, dataErr
 	}
 
-	return &dto.AuthResponse{
-		AccessToken:           data.AccessToken,
-		TokenType:             "Bearer",
-		RefreshToken:          data.RefreshToken,
-		AccessTokenExpiresIn:  int(data.ExpiredAt.Unix()),
-		RefreshTokenExpiresIn: int(data.ExpiredAt.Unix()),
+	return &dto.TokenResponse{
+		AccessToken:  data.AccessToken,
+		TokenType:    "Bearer",
+		RefreshToken: data.RefreshToken,
+		ExpirationResponse: dto.ExpirationResponse{
+			AccessTokenExpiresIn:  int(data.ExpiredAt.Unix()),
+			RefreshTokenExpiresIn: int(data.ExpiredAt.Unix()),
+		},
 	}, nil
 
 }
@@ -171,7 +190,7 @@ func (a *authService) tokenGenerator(user *entity.User) (*dto.NewTokenDto, *doma
 }
 
 // GenerateToken implements AuthService.
-func (a *authService) generateNewToken(user *entity.User) (*dto.AuthResponse, *domain.Error) {
+func (a *authService) generateNewToken(user *entity.User) (*dto.TokenResponse, *domain.Error) {
 	newToken, tokenERr := a.tokenGenerator(user)
 
 	if tokenERr != nil {
@@ -189,12 +208,14 @@ func (a *authService) generateNewToken(user *entity.User) (*dto.AuthResponse, *d
 		return nil, err
 	}
 
-	return &dto.AuthResponse{
-		AccessToken:           newToken.AccessToken,
-		TokenType:             newToken.TokenType,
-		RefreshToken:          newToken.RefreshToken,
-		AccessTokenExpiresIn:  int(newToken.AccessTokenExpiresIn.Unix()),
-		RefreshTokenExpiresIn: int(newToken.RefreshTokenExpiresIn.Unix()),
+	return &dto.TokenResponse{
+		AccessToken:  newToken.AccessToken,
+		TokenType:    newToken.TokenType,
+		RefreshToken: newToken.RefreshToken,
+		ExpirationResponse: dto.ExpirationResponse{
+			AccessTokenExpiresIn:  int(newToken.AccessTokenExpiresIn.Unix()),
+			RefreshTokenExpiresIn: int(newToken.RefreshTokenExpiresIn.Unix()),
+		},
 	}, nil
 
 }

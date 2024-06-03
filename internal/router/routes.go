@@ -32,6 +32,7 @@ func (s *HTTP) RegisterFiberRoutes(app *fiber.App) {
 	auth.Get("/google/callback", s.auth.GoogleCallback)
 	auth.Get("/refresh", s.auth.RefreshToken)
 	auth.Post("/google/callback", s.auth.AuthGoogle)
+	auth.Get("/self", s.authMiddleware.Init, s.auth.GetSelf)
 
 	category := v1.Group("/category", s.authMiddleware.Init)
 	category.Post("/", s.category.CreateCategory)

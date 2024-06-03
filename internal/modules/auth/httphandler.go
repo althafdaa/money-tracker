@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"money-tracker/internal/dto"
 	refreshtoken "money-tracker/internal/modules/refresh_token"
 	"os"
 	"strings"
@@ -100,6 +101,22 @@ func (a *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	}
 
 	data, err := a.authService.RefreshToken(refreshToken)
+	if err != nil {
+		return c.Status(err.Code).JSON(fiber.Map{
+			"error": err.Err.Error(),
+			"code":  err.Code,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"code": fiber.StatusOK,
+		"data": data,
+	})
+}
+
+func (a *AuthHandler) GetSelf(c *fiber.Ctx) error {
+	user := c.Locals("user").(*dto.ATClaims)
+	data, err := a.authService.GetSelf(user)
 	if err != nil {
 		return c.Status(err.Code).JSON(fiber.Map{
 			"error": err.Err.Error(),

@@ -1,18 +1,13 @@
 meta {
-  name: Get Transactions
+  name: Self
   type: http
-  seq: 5
+  seq: 4
 }
 
 get {
-  url: {{hostname}}/api/v1/transaction?page=1&limit=20
+  url: {{hostname}}/api/v1/auth/self
   body: none
   auth: none
-}
-
-query {
-  page: 1
-  limit: 20
 }
 
 headers {
@@ -30,8 +25,6 @@ auth:bearer {
 
 body:json {
   {
-    "amount": 999999,
-    "category_id": 2,
-    "transaction_at": "2024-06-02"
+    "code": "something"
   }
 }
