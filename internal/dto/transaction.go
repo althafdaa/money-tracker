@@ -41,3 +41,16 @@ type TransactionResponse struct {
 	UpdatedAt       *time.Time             `json:"updated_at"`
 	DeletedAt       gorm.DeletedAt         `json:"-"`
 }
+
+type TransactionsResponse []TransactionResponse
+
+type Total struct {
+	Total        int `json:"total"`
+	TotalIncome  int `json:"total_income"`
+	TotalExpense int `json:"total_expense"`
+}
+
+type TransactionsWithTotalResponse struct {
+	Transactions TransactionsResponse `json:"transactions"`
+	Total        Total                `json:"total"`
+}

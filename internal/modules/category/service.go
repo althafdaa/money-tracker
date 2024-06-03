@@ -2,10 +2,10 @@ package category
 
 import (
 	"errors"
-	"money-tracker/internal/category/subcategory"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
+	"money-tracker/internal/modules/category/subcategory"
 	"money-tracker/internal/utils"
 
 	"github.com/gofiber/fiber/v2"

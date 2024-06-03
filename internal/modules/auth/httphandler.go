@@ -2,7 +2,7 @@ package auth
 
 import (
 	"errors"
-	refreshtoken "money-tracker/internal/refresh_token"
+	refreshtoken "money-tracker/internal/modules/refresh_token"
 	"os"
 	"strings"
 

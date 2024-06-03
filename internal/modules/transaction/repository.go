@@ -13,7 +13,6 @@ import (
 type TransactionRepository interface {
 	CreateTransaction(transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
 	FindAllTransactions(userID int, values *dto.GetAllQueryParams) (*[]entity.TransactionRaw, *domain.Error)
-	FindAllTransactionsCount(userID int, values *dto.GetAllQueryParams) (totalDocs int, err *domain.Error)
 	findAllTransactionBuildQuery(userID int, values *dto.GetAllQueryParams) (string, string, []interface{})
 	GetAllTransactionTotal(userID int, values *dto.GetAllQueryParams) (*entity.TotalTransaction, *domain.Error)
 	DeleteTransactionByID(transactionID int) *domain.Error
@@ -32,6 +31,7 @@ func (t *transactionRepository) GetAllTransactionTotal(userID int, values *dto.G
 
 	query := fmt.Sprintf(`
 		select
+			count(*) as count,
 			sum(t.amount) as total,
 			sum(case when t.transaction_type = 'income' then t.amount else 0 end) as total_income,
 			sum(case when t.transaction_type = 'expense' then t.amount else 0 end) as total_expense
@@ -98,27 +98,6 @@ func (t *transactionRepository) findAllTransactionBuildQuery(userID int, values 
 	`, whereClause)
 
 	return query, whereClause, args
-}
-
-// findAllTransactionsCount implements TransactionRepository.
-func (t *transactionRepository) FindAllTransactionsCount(userID int, values *dto.GetAllQueryParams) (totalDocs int, err *domain.Error) {
-	var count int64
-	_, whereClause, args := t.findAllTransactionBuildQuery(userID, values)
-	query := fmt.Sprintf(`
-		select
-			count(*)
-		from
-			"transaction" t
-		%s
-	`, whereClause)
-
-	result := t.db.Raw(query, args...).Count(&count)
-
-	if result.Error != nil {
-		return 0, &domain.Error{Code: 500, Err: result.Error}
-	}
-
-	return int(count), nil
 }
 
 // FindAllTransactions implements TransactionRepository.

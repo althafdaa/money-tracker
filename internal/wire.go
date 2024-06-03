@@ -4,15 +4,15 @@
 package internal
 
 import (
-	"money-tracker/internal/auth"
-	"money-tracker/internal/category"
-	"money-tracker/internal/category/subcategory"
 	"money-tracker/internal/config"
 	"money-tracker/internal/middleware"
-	refreshtoken "money-tracker/internal/refresh_token"
+	"money-tracker/internal/modules/auth"
+	"money-tracker/internal/modules/category"
+	"money-tracker/internal/modules/category/subcategory"
+	refreshtoken "money-tracker/internal/modules/refresh_token"
+	"money-tracker/internal/modules/transaction"
+	"money-tracker/internal/modules/user"
 	"money-tracker/internal/router"
-	"money-tracker/internal/transaction"
-	"money-tracker/internal/user"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"

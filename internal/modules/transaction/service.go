@@ -3,11 +3,11 @@ package transaction
 import (
 	"errors"
 	"math"
-	"money-tracker/internal/category"
-	"money-tracker/internal/category/subcategory"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
+	"money-tracker/internal/modules/category"
+	"money-tracker/internal/modules/category/subcategory"
 	"time"
 
 	"gorm.io/gorm"
@@ -18,10 +18,10 @@ type TransactionService interface {
 	UpdateTransactionByID(transactionID int, transaction *dto.CreateUpdateTransaction) (*dto.TransactionResponse, *domain.Error)
 	GetOneTransactionByID(transactionID int) (*dto.TransactionResponse, *domain.Error)
 	DeleteTransactionByID(transactionID int) *domain.Error
-	GetAllPaginatedTransactions(userID int, query *dto.GetAllQueryParams) (*dto.Pagination[dto.TransactionResponse], *domain.Error)
+	GetAllPaginatedTransactions(userID int, query *dto.GetAllQueryParams) (*dto.Pagination[dto.TransactionsWithTotalResponse], *domain.Error)
 	GetAllTransactionTotal(userID int, query *dto.GetAllQueryParams) (*entity.TotalTransaction, *domain.Error)
-	findAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]dto.TransactionResponse, *domain.Error)
-	getTransactionPaginationMetadata(userID int, query *dto.GetAllQueryParams) (*dto.PaginationMetadata, *domain.Error)
+	findAllTransactions(userID int, query *dto.GetAllQueryParams) (*dto.TransactionsResponse, *domain.Error)
+	getTransactionPaginationMetadata(totalDocs int, query *dto.GetAllQueryParams) *dto.PaginationMetadata
 	generateGetTransactionFilter(query *dto.GetAllQueryParams) (*dto.GetAllQueryParams, *domain.Error)
 }
 type transactionService struct {
@@ -40,11 +40,12 @@ func (t *transactionService) GetAllTransactionTotal(userID int, query *dto.GetAl
 }
 
 // GetAllPaginatedTransactions implements TransactionService.
-func (t *transactionService) GetAllPaginatedTransactions(userID int, query *dto.GetAllQueryParams) (*dto.Pagination[dto.TransactionResponse], *domain.Error) {
-	metadata, metadataErr := t.getTransactionPaginationMetadata(userID, query)
-	if metadataErr != nil {
-		return nil, metadataErr
+func (t *transactionService) GetAllPaginatedTransactions(userID int, query *dto.GetAllQueryParams) (*dto.Pagination[dto.TransactionsWithTotalResponse], *domain.Error) {
+	totals, totalsErr := t.GetAllTransactionTotal(userID, query)
+	if totalsErr != nil {
+		return nil, totalsErr
 	}
+	metadata := t.getTransactionPaginationMetadata(totals.Count, query)
 
 	res, transactionErr := t.findAllTransactions(userID, query)
 
@@ -52,9 +53,16 @@ func (t *transactionService) GetAllPaginatedTransactions(userID int, query *dto.
 		return nil, transactionErr
 	}
 
-	return &dto.Pagination[dto.TransactionResponse]{
-		Code:     200,
-		Data:     *res,
+	return &dto.Pagination[dto.TransactionsWithTotalResponse]{
+		Code: 200,
+		Data: dto.TransactionsWithTotalResponse{
+			Transactions: *res,
+			Total: dto.Total{
+				Total:        totals.Total,
+				TotalIncome:  totals.TotalIncome,
+				TotalExpense: totals.TotalExpense,
+			},
+		},
 		Metadata: *metadata,
 	}, nil
 }
@@ -93,18 +101,7 @@ func (t *transactionService) generateGetTransactionFilter(query *dto.GetAllQuery
 }
 
 // getTransactionPaginationMetadata implements TransactionService.
-func (t *transactionService) getTransactionPaginationMetadata(userID int, query *dto.GetAllQueryParams) (*dto.PaginationMetadata, *domain.Error) {
-	filter, filterErr := t.generateGetTransactionFilter(query)
-	if filterErr != nil {
-		return nil, filterErr
-	}
-
-	totalDocs, err := t.transactionRepository.FindAllTransactionsCount(userID, filter)
-
-	if err != nil {
-		return nil, err
-	}
-
+func (t *transactionService) getTransactionPaginationMetadata(totalDocs int, query *dto.GetAllQueryParams) *dto.PaginationMetadata {
 	totalPages := int(math.Ceil(float64(totalDocs) / float64(query.Limit)))
 
 	return &dto.PaginationMetadata{
@@ -113,11 +110,11 @@ func (t *transactionService) getTransactionPaginationMetadata(userID int, query 
 		TotalDocs:   totalDocs,
 		TotalPages:  totalPages,
 		HasNextPage: query.Page < totalPages,
-	}, nil
+	}
 }
 
 // FindAllTransactions implements TransactionService.
-func (t *transactionService) findAllTransactions(userID int, query *dto.GetAllQueryParams) (*[]dto.TransactionResponse, *domain.Error) {
+func (t *transactionService) findAllTransactions(userID int, query *dto.GetAllQueryParams) (*dto.TransactionsResponse, *domain.Error) {
 	filter, filterErr := t.generateGetTransactionFilter(query)
 	if filterErr != nil {
 		return nil, filterErr
@@ -127,7 +124,7 @@ func (t *transactionService) findAllTransactions(userID int, query *dto.GetAllQu
 		return nil, err
 	}
 
-	var transactions []dto.TransactionResponse
+	var transactions dto.TransactionsResponse
 	for _, data := range *res {
 		cat := entity.Category{
 			ID:   data.CategoryID,

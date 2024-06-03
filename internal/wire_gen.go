@@ -9,15 +9,15 @@ package internal
 import (
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
-	"money-tracker/internal/auth"
-	"money-tracker/internal/category"
-	"money-tracker/internal/category/subcategory"
+	"money-tracker/internal/modules/auth"
+	"money-tracker/internal/modules/category"
+	"money-tracker/internal/modules/category/subcategory"
 	"money-tracker/internal/config"
 	"money-tracker/internal/middleware"
-	"money-tracker/internal/refresh_token"
+	"money-tracker/internal/modules/refresh_token"
 	"money-tracker/internal/router"
-	"money-tracker/internal/transaction"
-	"money-tracker/internal/user"
+	"money-tracker/internal/modules/transaction"
+	"money-tracker/internal/modules/user"
 )
 
 // Injectors from wire.go:

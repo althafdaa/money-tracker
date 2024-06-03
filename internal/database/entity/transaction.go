@@ -58,6 +58,7 @@ type TransactionRaw struct {
 }
 
 type TotalTransaction struct {
+	Count        int
 	Total        int
 	TotalIncome  int
 	TotalExpense int

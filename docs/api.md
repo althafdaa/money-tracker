@@ -422,33 +422,41 @@ type Response = {
 - Response
 
   ```ts
-  type Response = {
-    code: 200;
-    data: Array<{
+  type Transaction = {
+    id: string;
+    amount: number;
+    category: {
       id: string;
-      amount: number;
-      category: {
-        id: string;
-        name: string;
-        slug: string;
-        type: 'income' | 'expense';
-        created_at: string;
-        updated_at: string;
-      };
-      subcategory: {
-        id: string;
-        name: string;
-        slug: string;
-        category_id: string;
-        created_at: string;
-        updated_at: string;
-        user_id: string;
-      } | null;
-      transaction_at: string;
-      description: string | null;
+      name: string;
+      slug: string;
+      type: 'income' | 'expense';
       created_at: string;
       updated_at: string;
-    }> | null;
+    };
+    subcategory: {
+      id: string;
+      name: string;
+      slug: string;
+      category_id: string;
+      created_at: string;
+      updated_at: string;
+      user_id: string;
+    } | null;
+    transaction_at: string;
+    description: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+  type Response = {
+    code: 200;
+    data: {
+      transactions: Transaction[];
+      total: {
+        total: number;
+        total_income: number;
+        total_expense: number;
+      };
+    };
     metadata: {
       page: number;
       limit: number;

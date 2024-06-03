@@ -2,8 +2,8 @@ package category
 
 import (
 	"errors"
-	"money-tracker/internal/category/subcategory"
 	"money-tracker/internal/dto"
+	"money-tracker/internal/modules/category/subcategory"
 	"strconv"
 
 	"github.com/go-playground/validator/v10"

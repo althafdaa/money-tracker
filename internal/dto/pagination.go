@@ -10,6 +10,6 @@ type PaginationMetadata struct {
 
 type Pagination[T any] struct {
 	Code     int                `json:"code"`
-	Data     []T                `json:"data"`
+	Data     T                  `json:"data"`
 	Metadata PaginationMetadata `json:"metadata"`
 }

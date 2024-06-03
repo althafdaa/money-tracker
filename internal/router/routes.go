@@ -1,10 +1,10 @@
 package router
 
 import (
-	"money-tracker/internal/auth"
-	"money-tracker/internal/category"
 	"money-tracker/internal/middleware"
-	"money-tracker/internal/transaction"
+	"money-tracker/internal/modules/auth"
+	"money-tracker/internal/modules/category"
+	"money-tracker/internal/modules/transaction"
 
 	"github.com/gofiber/fiber/v2"
 )
