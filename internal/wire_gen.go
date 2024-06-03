@@ -9,15 +9,16 @@ package internal
 import (
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
+	"money-tracker/internal/config"
+	"money-tracker/internal/middleware"
 	"money-tracker/internal/modules/auth"
 	"money-tracker/internal/modules/category"
 	"money-tracker/internal/modules/category/subcategory"
-	"money-tracker/internal/config"
-	"money-tracker/internal/middleware"
 	"money-tracker/internal/modules/refresh_token"
-	"money-tracker/internal/router"
 	"money-tracker/internal/modules/transaction"
 	"money-tracker/internal/modules/user"
+	"money-tracker/internal/router"
+	"money-tracker/internal/utils"
 )
 
 // Injectors from wire.go:
@@ -27,13 +28,14 @@ func InitializeServer(db *gorm.DB, validator2 *validator.Validate) *router.HTTP 
 	refreshTokenService := refreshtoken.NewRefreshTokenService(refreshTokenRepository)
 	configConfig := config.NewConfigInit()
 	userRepository := user.NewUserRepository(db)
-	userService := user.NewUserService(userRepository)
-	authService := auth.NewAuthService(refreshTokenService, configConfig, userService)
+	utilsUtils := utils.NewUtils()
+	userService := user.NewUserService(userRepository, utilsUtils)
+	authService := auth.NewAuthService(refreshTokenService, configConfig, userService, utilsUtils)
 	authHandler := auth.NewAuthHandler(authService, validator2, refreshTokenService)
 	categoryRepository := category.NewCategoryRepository(db)
 	subcategoryRepository := subcategory.NewSubcategoryRepository(db)
-	subcategoryService := subcategory.NewSubcategoryService(subcategoryRepository)
-	categoryService := category.NewCategoryService(categoryRepository, subcategoryService)
+	subcategoryService := subcategory.NewSubcategoryService(subcategoryRepository, utilsUtils)
+	categoryService := category.NewCategoryService(categoryRepository, subcategoryService, utilsUtils)
 	categoryHandler := category.NewCategoryHandler(categoryService, subcategoryService, validator2)
 	transactionRepository := transaction.NewTransactionRepository(db)
 	transactionService := transaction.NewTransactionService(transactionRepository, categoryService, subcategoryService)

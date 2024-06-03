@@ -7,7 +7,6 @@ import (
 	"money-tracker/internal/dto"
 	"money-tracker/internal/utils"
 
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -19,6 +18,7 @@ type UserService interface {
 
 type userService struct {
 	userRepository UserRepository
+	utils          utils.Utils
 }
 
 // GetOneUserFromID implements UserService.
@@ -32,20 +32,17 @@ func (u *userService) GetOneUserFromID(id int) (*entity.User, *domain.Error) {
 
 // CreateUser implements UserService.
 func (u *userService) CreateUserFromGoogle(body *dto.GoogleUserData) (*entity.User, *domain.Error) {
-	randString := utils.GenerateRandomCode(20)
-	hash, bcryptErr := bcrypt.GenerateFromPassword([]byte(randString), bcrypt.DefaultCost)
-	if bcryptErr != nil {
-		return nil, &domain.Error{
-			Code: 500,
-			Err:  bcryptErr,
-		}
+	hash, err := u.utils.HashPassword("")
+
+	if err != nil {
+		return nil, err
 	}
 
 	user, err := u.userRepository.CreateOne(entity.User{
 		Name:              body.Name,
 		Email:             body.Email,
 		ProfilePictureUrl: body.Picture,
-		Hash:              string(hash),
+		Hash:              *hash,
 	})
 
 	if err != nil {
@@ -67,8 +64,9 @@ func (u *userService) CheckEmail(email string) (*entity.User, *domain.Error) {
 	return user, nil
 }
 
-func NewUserService(userRepository UserRepository) UserService {
+func NewUserService(userRepository UserRepository, utils utils.Utils) UserService {
 	return &userService{
 		userRepository,
+		utils,
 	}
 }

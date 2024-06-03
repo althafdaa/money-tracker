@@ -32,8 +32,9 @@ func (u *userRepository) GetOneUserByID(id int) (*entity.User, *domain.Error) {
 }
 
 // CreateOne implements UserRepository.
-func (u *userRepository) CreateOne(user entity.User) (*entity.User, *domain.Error) {
-	res := u.db.Raw("insert into user_data (email, name, profile_picture_url, hash) values (?, ?, ?, ?) returning *", user.Email, user.Name, user.ProfilePictureUrl, user.Hash).Scan(&user)
+func (u *userRepository) CreateOne(body entity.User) (*entity.User, *domain.Error) {
+	var user *entity.User
+	res := u.db.Raw("insert into user_data (email, name, profile_picture_url, hash) values (?, ?, ?, ?) returning *", body.Email, body.Name, body.ProfilePictureUrl, body.Hash).Scan(&user)
 
 	if res.Error != nil {
 		return nil, &domain.Error{
@@ -42,7 +43,7 @@ func (u *userRepository) CreateOne(user entity.User) (*entity.User, *domain.Erro
 		}
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 // GetUserByEmail implements UserRepository.

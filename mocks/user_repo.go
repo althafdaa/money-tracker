@@ -13,7 +13,11 @@ type UserRepositoryMock struct {
 
 // CreateOne implements user.UserRepository.
 func (_m *UserRepositoryMock) CreateOne(user entity.User) (*entity.User, *domain.Error) {
-	panic("unimplemented")
+	args := _m.Called(user)
+	if args.Get(0) == nil {
+		return nil, args.Get(1).(*domain.Error)
+	}
+	return args.Get(0).(*entity.User), nil
 }
 
 func (_m *UserRepositoryMock) GetOneUserByID(id int) (*entity.User, *domain.Error) {
@@ -30,11 +34,6 @@ func (_m *UserRepositoryMock) GetOneUserByEmail(email string) (*entity.User, *do
 		return nil, args.Get(1).(*domain.Error)
 	}
 	return args.Get(0).(*entity.User), nil
-}
-
-func (_m *UserRepositoryMock) CreateUser(user entity.User) (*entity.User, *domain.Error) {
-	args := _m.Called(user)
-	return args.Get(0).(*entity.User), args.Get(1).(*domain.Error)
 }
 
 func NewUserRepositoryMock(t interface {

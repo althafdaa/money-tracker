@@ -13,6 +13,7 @@ import (
 	"money-tracker/internal/modules/transaction"
 	"money-tracker/internal/modules/user"
 	"money-tracker/internal/router"
+	"money-tracker/internal/utils"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
@@ -27,6 +28,7 @@ func InitializeServer(
 		router.NewHTTP,
 
 		config.NewConfigInit,
+		utils.NewUtils,
 
 		middleware.NewAuthMiddleware,
 

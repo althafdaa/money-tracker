@@ -25,6 +25,7 @@ type CategoryService interface {
 type categoryService struct {
 	categoryRepo       CategoryRepository
 	subcategoryService subcategory.SubcategoryService
+	utils              utils.Utils
 }
 
 // GetAllCategories implements CategoryService.
@@ -125,7 +126,7 @@ func (c *categoryService) GetOneCategoryByID(id int) (*entity.Category, *domain.
 
 // CreateSlug implements CategoryService.
 func (c *categoryService) CreateCategory(body *dto.CreateCategoryBody) (*entity.Category, *domain.Error) {
-	slug, err := utils.Slugify(body.Name)
+	slug, err := c.utils.Slugify(body.Name)
 	if err != nil {
 		return nil, &domain.Error{
 			Code: 500,
@@ -150,9 +151,11 @@ func (c *categoryService) CreateCategory(body *dto.CreateCategoryBody) (*entity.
 
 func NewCategoryService(categoryRepo CategoryRepository,
 	subcategoryService subcategory.SubcategoryService,
+	utils utils.Utils,
 ) CategoryService {
 	return &categoryService{
 		categoryRepo,
 		subcategoryService,
+		utils,
 	}
 }

@@ -36,6 +36,7 @@ type authService struct {
 	refreshTokenService refreshtoken.RefreshTokenService
 	config              *config.Config
 	userService         user.UserService
+	utils               utils.Utils
 }
 
 // GetSelf implements AuthService.
@@ -178,7 +179,7 @@ func (a *authService) tokenGenerator(user *entity.User) (*dto.NewTokenDto, *doma
 	}
 
 	expiredRefreshTime := time.Now().Add(time.Hour * 24 * 7)
-	refreshToken := utils.GenerateRandomCode(32)
+	refreshToken := a.utils.GenerateRandomCode(32)
 
 	return &dto.NewTokenDto{
 		AccessToken:           accessToken,
@@ -264,10 +265,12 @@ func NewAuthService(
 	refreshTokenService refreshtoken.RefreshTokenService,
 	config *config.Config,
 	userService user.UserService,
+	utils utils.Utils,
 ) AuthService {
 	return &authService{
 		refreshTokenService,
 		config,
 		userService,
+		utils,
 	}
 }

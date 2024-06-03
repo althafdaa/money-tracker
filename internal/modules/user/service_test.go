@@ -4,6 +4,7 @@ import (
 	"errors"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
+	"money-tracker/internal/dto"
 	"money-tracker/mocks"
 	"testing"
 	"time"
@@ -15,14 +16,17 @@ import (
 type userInstance struct {
 	userService UserService
 	userRepo    *mocks.UserRepositoryMock
+	utils       *mocks.UtilsMock
 }
 
 func createUserInstance(t *testing.T) userInstance {
 	userRepo := mocks.NewUserRepositoryMock(t)
-	userService := NewUserService(userRepo)
+	utils := mocks.NewUtilsMock(t)
+	userService := NewUserService(userRepo, utils)
 	return userInstance{
 		userRepo:    userRepo,
 		userService: userService,
+		utils:       utils,
 	}
 }
 
@@ -121,7 +125,7 @@ func TestCreateUserFromGoogle(t *testing.T) {
 
 		now := time.Now()
 
-		body := entity.User{
+		repoBody := entity.User{
 			Name:              "test",
 			Email:             "test@gmail.com",
 			ProfilePictureUrl: "test.jpg",
@@ -135,32 +139,61 @@ func TestCreateUserFromGoogle(t *testing.T) {
 			Hash:              hash,
 			CreatedAt:         &now,
 			UpdatedAt:         &now,
-			ID:                1,
 		}
 
-		instance.userRepo.On("CreateUser", body).Return(expected, &domain.Error{})
+		instance.utils.On("HashPassword", "").Return(&hash, nil)
+		instance.userRepo.On("CreateOne", repoBody).Return(expected, nil)
 
-		res, err := instance.userRepo.CreateUser(body)
-		assert.NotNil(t, err)
-		assert.Equal(t, expected, res)
+		data, err := instance.userService.CreateUserFromGoogle(&dto.GoogleUserData{
+			Name:    "test",
+			Email:   "test@gmail.com",
+			Picture: "test.jpg",
+		})
+
+		assert.Nil(t, err)
+		assert.Equal(t, expected, data)
 	})
 
-	t.Run("failed create user from google", func(t *testing.T) {
+	t.Run("hashing failed", func(t *testing.T) {
+		instance := createUserInstance(t)
+
+		instance.utils.On("HashPassword", "").Return(nil, &domain.Error{
+			Code: 500,
+			Err:  errors.New("error"),
+		})
+
+		_, err := instance.userService.CreateUserFromGoogle(&dto.GoogleUserData{})
+
+		assert.NotNil(t, err)
+		assert.Equal(t, 500, err.Code)
+	})
+
+	t.Run("create user failed", func(t *testing.T) {
 		instance := createUserInstance(t)
 		hash := "hash"
-		body := entity.User{
+
+		repoBody := entity.User{
 			Name:              "test",
 			Email:             "test@gmail.com",
 			ProfilePictureUrl: "test.jpg",
 			Hash:              hash,
 		}
 
-		instance.userRepo.On("CreateUser", body).Return(&entity.User{}, &domain.Error{
+		instance.utils.On("HashPassword", "").Return(&hash, nil)
+
+		instance.utils.On("HashPassword", "").Return(&hash, nil)
+		instance.userRepo.On("CreateOne", repoBody).Return(nil, &domain.Error{
 			Code: 500,
 			Err:  errors.New("error"),
 		})
 
-		_, err := instance.userRepo.CreateUser(body)
+		_, err := instance.userService.CreateUserFromGoogle(&dto.GoogleUserData{
+			Name:    "test",
+			Email:   "test@gmail.com",
+			Picture: "test.jpg",
+		})
+
 		assert.NotNil(t, err)
+		assert.Equal(t, 500, err.Code)
 	})
 }
