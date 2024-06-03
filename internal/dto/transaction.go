@@ -28,7 +28,7 @@ type CreateUpdateTransaction struct {
 	Description   *string
 }
 
-type TransactionResponse struct {
+type TransactionOneResponse struct {
 	ID              int                    `json:"id"`
 	Amount          int                    `json:"amount"`
 	UserID          int                    `json:"-"`
@@ -42,7 +42,21 @@ type TransactionResponse struct {
 	DeletedAt       gorm.DeletedAt         `json:"-"`
 }
 
-type TransactionsResponse []TransactionResponse
+type TransactionListResponse struct {
+	ID              int                    `json:"id"`
+	Amount          int                    `json:"amount"`
+	UserID          int                    `json:"-"`
+	SubcategoryID   *int                   `json:"subcategory_id"`
+	TransactionType entity.TransactionType `json:"transaction_type"`
+	TransactionAt   time.Time              `json:"transaction_at"`
+	Category        entity.Category        `json:"category"`
+	Description     *string                `json:"description"`
+	CreatedAt       *time.Time             `json:"created_at"`
+	UpdatedAt       *time.Time             `json:"updated_at"`
+	DeletedAt       gorm.DeletedAt         `json:"-"`
+}
+
+type TransactionsResponse []TransactionListResponse
 
 type Total struct {
 	Total        int `json:"total"`

@@ -31,6 +31,15 @@ func (Transaction) TableName() string {
 	return "transaction"
 }
 
+type TransactionListRaw struct {
+	Transaction
+	CategorySlug      string       `json:"category_slug"`
+	CategoryName      string       `json:"category_name"`
+	CategoryType      CategoryType `json:"category_type"`
+	CategoryCreatedAt *time.Time   `json:"category_created_at"`
+	CategoryUpdatedAt *time.Time   `json:"category_updated_at"`
+}
+
 type TransactionRaw struct {
 	ID     int `json:"id"`
 	Amount int `json:"amount"`

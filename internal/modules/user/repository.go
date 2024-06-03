@@ -1,7 +1,6 @@
 package user
 
 import (
-	"errors"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 
@@ -23,10 +22,6 @@ func (u *userRepository) GetOneUserByID(id int) (*entity.User, *domain.Error) {
 	res := u.db.Raw("select * from user_data where id = ? limit 1", id).First(&user)
 
 	if res.Error != nil {
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-
 		return nil, &domain.Error{
 			Code: 500,
 			Err:  res.Error,
@@ -56,10 +51,6 @@ func (u *userRepository) GetOneUserByEmail(email string) (*entity.User, *domain.
 	res := u.db.Raw("select * from user_data where email = ? limit 1", email).First(&user)
 
 	if res.Error != nil {
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-
 		return nil, &domain.Error{
 			Code: 500,
 			Err:  res.Error,

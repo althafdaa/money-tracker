@@ -14,9 +14,9 @@ import (
 )
 
 type TransactionService interface {
-	CreateOneTransaction(transaction *dto.CreateUpdateTransaction) (*dto.TransactionResponse, *domain.Error)
-	UpdateTransactionByID(transactionID int, transaction *dto.CreateUpdateTransaction) (*dto.TransactionResponse, *domain.Error)
-	GetOneTransactionByID(transactionID int) (*dto.TransactionResponse, *domain.Error)
+	CreateOneTransaction(transaction *dto.CreateUpdateTransaction) (*dto.TransactionOneResponse, *domain.Error)
+	UpdateTransactionByID(transactionID int, transaction *dto.CreateUpdateTransaction) (*dto.TransactionOneResponse, *domain.Error)
+	GetOneTransactionByID(transactionID int) (*dto.TransactionOneResponse, *domain.Error)
 	DeleteTransactionByID(transactionID int) *domain.Error
 	GetAllPaginatedTransactions(userID int, query *dto.GetAllQueryParams) (*dto.Pagination[dto.TransactionsWithTotalResponse], *domain.Error)
 	GetAllTransactionTotal(userID int, query *dto.GetAllQueryParams) (*entity.TotalTransaction, *domain.Error)
@@ -133,27 +133,18 @@ func (t *transactionService) findAllTransactions(userID int, query *dto.GetAllQu
 			Type: data.CategoryType,
 		}
 
-		var subCat *entity.Subcategory
-		if data.SubcategoryID != nil {
-			subCat = &entity.Subcategory{
-				ID:   *data.SubcategoryID,
-				Name: *data.SubcategoryName,
-				Slug: *data.SubcategorySlug,
-			}
-		}
-
-		transactions = append(transactions, dto.TransactionResponse{
+		transactions = append(transactions, dto.TransactionListResponse{
 			ID:              data.ID,
 			Amount:          data.Amount,
 			UserID:          data.UserID,
 			TransactionType: data.TransactionType,
 			TransactionAt:   data.TransactionAt,
 			Category:        cat,
-			Subcategory:     subCat,
 			Description:     data.Description,
 			CreatedAt:       data.CreatedAt,
 			UpdatedAt:       data.UpdatedAt,
 			DeletedAt:       data.DeletedAt,
+			SubcategoryID:   data.SubcategoryID,
 		})
 
 	}
@@ -162,7 +153,7 @@ func (t *transactionService) findAllTransactions(userID int, query *dto.GetAllQu
 }
 
 // UpdateTransactionByID implements TransactionService.
-func (t *transactionService) UpdateTransactionByID(transactionID int, transaction *dto.CreateUpdateTransaction) (*dto.TransactionResponse, *domain.Error) {
+func (t *transactionService) UpdateTransactionByID(transactionID int, transaction *dto.CreateUpdateTransaction) (*dto.TransactionOneResponse, *domain.Error) {
 	cat, catErr := t.categoryService.GetOneCategoryAndSubcategoryByID(transaction.CategoryID, transaction.SubcategoryID)
 
 	if catErr != nil {
@@ -186,7 +177,7 @@ func (t *transactionService) UpdateTransactionByID(transactionID int, transactio
 		return nil, err
 	}
 
-	return &dto.TransactionResponse{
+	return &dto.TransactionOneResponse{
 		ID:              res.ID,
 		Amount:          res.Amount,
 		UserID:          res.UserID,
@@ -202,7 +193,7 @@ func (t *transactionService) UpdateTransactionByID(transactionID int, transactio
 }
 
 // CreateOneTransaction implements TransactionService.
-func (t *transactionService) CreateOneTransaction(transaction *dto.CreateUpdateTransaction) (*dto.TransactionResponse, *domain.Error) {
+func (t *transactionService) CreateOneTransaction(transaction *dto.CreateUpdateTransaction) (*dto.TransactionOneResponse, *domain.Error) {
 	cat_subcat, catErr := t.categoryService.GetOneCategoryAndSubcategoryByID(transaction.CategoryID, transaction.SubcategoryID)
 
 	if catErr != nil {
@@ -226,7 +217,7 @@ func (t *transactionService) CreateOneTransaction(transaction *dto.CreateUpdateT
 		return nil, err
 	}
 
-	return &dto.TransactionResponse{
+	return &dto.TransactionOneResponse{
 		ID:              res.ID,
 		Amount:          res.Amount,
 		UserID:          res.UserID,
@@ -241,7 +232,7 @@ func (t *transactionService) CreateOneTransaction(transaction *dto.CreateUpdateT
 	}, nil
 }
 
-func (t *transactionService) GetOneTransactionByID(transactionID int) (*dto.TransactionResponse, *domain.Error) {
+func (t *transactionService) GetOneTransactionByID(transactionID int) (*dto.TransactionOneResponse, *domain.Error) {
 	data, err := t.transactionRepository.GetOneTransactionByID(transactionID)
 	if err != nil {
 		if errors.Is(err.Err, gorm.ErrRecordNotFound) {
@@ -274,7 +265,7 @@ func (t *transactionService) GetOneTransactionByID(transactionID int) (*dto.Tran
 		}
 	}
 
-	return &dto.TransactionResponse{
+	return &dto.TransactionOneResponse{
 		ID:              data.ID,
 		Amount:          data.Amount,
 		UserID:          data.UserID,

@@ -12,7 +12,7 @@ import (
 
 type TransactionRepository interface {
 	CreateTransaction(transaction *entity.Transaction) (*entity.Transaction, *domain.Error)
-	FindAllTransactions(userID int, values *dto.GetAllQueryParams) (*[]entity.TransactionRaw, *domain.Error)
+	FindAllTransactions(userID int, values *dto.GetAllQueryParams) (*[]entity.TransactionListRaw, *domain.Error)
 	findAllTransactionBuildQuery(userID int, values *dto.GetAllQueryParams) (string, string, []interface{})
 	GetAllTransactionTotal(userID int, values *dto.GetAllQueryParams) (*entity.TotalTransaction, *domain.Error)
 	DeleteTransactionByID(transactionID int) *domain.Error
@@ -66,6 +66,11 @@ func (t *transactionRepository) findAllTransactionBuildQuery(userID int, values 
 		args = append(args, values.CategoryID)
 	}
 
+	if values.SubcategoryID != nil {
+		whereClause += " and t.subcategory_id in (?)"
+		args = append(args, values.SubcategoryID)
+	}
+
 	if values.Search != "" {
 		whereClause += " and t.description ilike ?"
 		args = append(args, fmt.Sprintf("%%%s%%", values.Search))
@@ -82,16 +87,11 @@ func (t *transactionRepository) findAllTransactionBuildQuery(userID int, values 
 			t.*,
 			c.name as category_name,
 			c.slug as category_slug,
-			c.type as category_type,
-			
-			s."name" AS subcategory_name,
-			s.slug as subcategory_slug
+			c.type as category_type
 		FROM
 			"transaction" t
 		JOIN
 			category c ON t.category_id = c.id
-		LEFT JOIN
-			subcategory s ON t.subcategory_id = s.id
 		%s
 		ORDER BY
 			t.transaction_at DESC
@@ -101,9 +101,9 @@ func (t *transactionRepository) findAllTransactionBuildQuery(userID int, values 
 }
 
 // FindAllTransactions implements TransactionRepository.
-func (t *transactionRepository) FindAllTransactions(userID int, values *dto.GetAllQueryParams) (*[]entity.TransactionRaw, *domain.Error) {
+func (t *transactionRepository) FindAllTransactions(userID int, values *dto.GetAllQueryParams) (*[]entity.TransactionListRaw, *domain.Error) {
 
-	var raw []entity.TransactionRaw
+	var raw []entity.TransactionListRaw
 	query, _, args := t.findAllTransactionBuildQuery(userID, values)
 	query += ` 
 		limit ?
