@@ -39,7 +39,7 @@ func (s *HTTP) RegisterFiberRoutes(app *fiber.App) {
 	category.Get("/", s.category.GetAllCategories)
 	category.Post("/subcategory", s.category.CreateSubcategory)
 	category.Delete("/subcategory/:id", s.category.DeleteSubcategoryByID)
-	category.Put("/subcategory/:id", s.category.UpdateSubcategoryByID)
+	category.Patch("/subcategory/:id", s.category.UpdateSubcategoryByID)
 
 	transaction := v1.Group("/transaction", s.authMiddleware.Init)
 	transaction.Post("/", s.transaction.CreateTransaction)

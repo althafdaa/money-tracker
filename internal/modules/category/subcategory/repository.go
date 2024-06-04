@@ -39,7 +39,6 @@ func (s *subcategoryRepository) CreateOne(body *dto.SubcategoryBody) (*entity.Su
 	var subcategory entity.Subcategory
 	err := s.db.Table("subcategory").Create(&entity.Subcategory{
 		Name:       body.Name,
-		Slug:       body.Slug,
 		CategoryID: body.CategoryID,
 		UserID:     body.UserID,
 	}).Scan(&subcategory).Error
@@ -72,7 +71,7 @@ func (s *subcategoryRepository) DeleteByID(id int) *domain.Error {
 // UpdateOne implements SubcategoryRepository.
 func (s *subcategoryRepository) UpdateOne(id int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error) {
 	var subcategory entity.Subcategory
-	res := s.db.Exec("update subcategory set name = ?, slug = ? where id = ?", body.Name, body.Slug, id).Scan(&subcategory)
+	res := s.db.Raw("update subcategory set name = ? where id = ? returning *", body.Name, id).Scan(&subcategory)
 
 	if res.Error != nil {
 		return nil, &domain.Error{

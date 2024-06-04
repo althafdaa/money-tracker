@@ -258,7 +258,6 @@ func (t *transactionService) GetOneTransactionByID(transactionID int) (*dto.Tran
 		subCat = &entity.Subcategory{
 			ID:        *data.SubcategoryID,
 			Name:      *data.SubcategoryName,
-			Slug:      *data.SubcategorySlug,
 			CreatedAt: data.SubcategoryCreatedAt,
 			UpdatedAt: data.SubcategoryUpdatedAt,
 			UserID:    data.UserID,

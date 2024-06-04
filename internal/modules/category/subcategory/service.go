@@ -2,12 +2,10 @@ package subcategory
 
 import (
 	"errors"
-	"fmt"
 	"money-tracker/internal/database/entity"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
 	"money-tracker/internal/utils"
-	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -15,7 +13,7 @@ import (
 type SubcategoryService interface {
 	CreateSubcategory(body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error)
 	DeleteSubcategoryByID(id int) *domain.Error
-	UpdateSubcategoryByID(id int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error)
+	UpdateSubcategoryByID(id int, userID int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error)
 	GetOneSubcategoryByID(id int) (*entity.Subcategory, *domain.Error)
 }
 type subcategoryService struct {
@@ -36,19 +34,8 @@ func (s *subcategoryService) GetOneSubcategoryByID(id int) (*entity.Subcategory,
 
 // CreateSubcategory implements SubcategoryService.
 func (s *subcategoryService) CreateSubcategory(body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error) {
-	slug, err := s.utils.Slugify(body.Name)
-	if err != nil {
-		return nil, &domain.Error{
-			Code: 500,
-			Err:  err,
-		}
-	}
-
-	subcategorSlug := fmt.Sprintf("%s-%s-%s", slug, strconv.Itoa(body.CategoryID), strconv.Itoa(body.UserID))
-
 	res, resErr := s.subcategoryRepository.CreateOne(&dto.SubcategoryBody{
 		Name:       body.Name,
-		Slug:       subcategorSlug,
 		CategoryID: body.CategoryID,
 		UserID:     body.UserID,
 	})
@@ -77,19 +64,28 @@ func (s *subcategoryService) DeleteSubcategoryByID(id int) *domain.Error {
 }
 
 // UpdateSubcategory implements SubcategoryService.
-func (s *subcategoryService) UpdateSubcategoryByID(id int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error) {
-	updatedSlug, err := s.utils.Slugify(body.Name)
+func (s *subcategoryService) UpdateSubcategoryByID(id int, userID int, body *dto.SubcategoryBody) (*entity.Subcategory, *domain.Error) {
+	current, currentErr := s.subcategoryRepository.GetOneByID(id)
 
-	if err != nil {
+	if currentErr != nil {
+		if errors.Is(currentErr.Err, gorm.ErrRecordNotFound) {
+			return nil, &domain.Error{
+				Code: 404,
+				Err:  errors.New("SUBCATEGORY_NOT_FOUND"),
+			}
+		}
+		return nil, currentErr
+	}
+
+	if current.UserID != userID {
 		return nil, &domain.Error{
-			Code: 500,
-			Err:  err,
+			Code: 403,
+			Err:  errors.New("FORBIDDEN"),
 		}
 	}
 
 	res, resErr := s.subcategoryRepository.UpdateOne(id, &dto.SubcategoryBody{
 		Name: body.Name,
-		Slug: updatedSlug,
 	})
 
 	if resErr != nil {

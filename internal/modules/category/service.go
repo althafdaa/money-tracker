@@ -63,7 +63,6 @@ func (c *categoryService) GetAllCategories(userID int) (*[]dto.CategoryWithSubca
 			category.Subcategories = append(category.Subcategories, entity.Subcategory{
 				ID:         *r.SubcategoryID,
 				Name:       *r.SubcategoryName,
-				Slug:       *r.SubcategorySlug,
 				CreatedAt:  r.SubcategoryCreatedAt,
 				UpdatedAt:  r.SubcategoryUpdatedAt,
 				UserID:     userID,

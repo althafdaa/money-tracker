@@ -121,7 +121,7 @@ func (h *CategoryHandler) UpdateSubcategoryByID(c *fiber.Ctx) error {
 	type RequestBody struct {
 		Name string `json:"name" validate:"required,min=3,max=20"`
 	}
-	id, err := strconv.Atoi(c.Params("id"))
+	subcategoryID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": errors.New("INVALID_REQUEST_PARAMS"),
@@ -146,7 +146,9 @@ func (h *CategoryHandler) UpdateSubcategoryByID(c *fiber.Ctx) error {
 		})
 	}
 
-	res, resErr := h.subcategoryService.UpdateSubcategoryByID(id, &dto.SubcategoryBody{
+	user := c.Locals("user").(*dto.ATClaims)
+
+	res, resErr := h.subcategoryService.UpdateSubcategoryByID(subcategoryID, user.UserID, &dto.SubcategoryBody{
 		Name: body.Name,
 	})
 
