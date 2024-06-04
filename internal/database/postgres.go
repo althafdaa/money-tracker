@@ -10,14 +10,7 @@ import (
 )
 
 func New() *gorm.DB {
-	var (
-		host     = os.Getenv("DB_HOST")
-		port     = os.Getenv("DB_PORT")
-		user     = os.Getenv("DB_USERNAME")
-		password = os.Getenv("DB_PASSWORD")
-		dbname   = os.Getenv("DB_DATABASE")
-	)
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", host, user, password, dbname, port)
+	dsn := os.Getenv("DB_URL")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		TranslateError: true,
 	})

@@ -99,12 +99,13 @@ func (a *config) exchange(code string) (*oauth2.Token, *domain.Error) {
 func (a *config) googleOauthConfig() *oauth2.Config {
 	client_id := os.Getenv("GOOGLE_CLIENT_ID")
 	client_secret := os.Getenv("GOOGLE_CLIENT_SECRET")
+	client_url := os.Getenv("GOOGLE_REDIRECT_URL_DOMAIN")
+
 	return &oauth2.Config{
 		ClientID:     client_id,
 		ClientSecret: client_secret,
 		Endpoint:     google.Endpoint,
-		// RedirectURL:  "http://localhost:3000",
-		RedirectURL: "http://localhost:8080/api/v1/auth/google/callback",
+		RedirectURL:  client_url + "/",
 		Scopes: []string{"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile"},
 	}
