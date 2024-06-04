@@ -7,7 +7,7 @@ Golang API Application to track money transactions
 - [Bruno HTTP Client](https://docs.usebruno.com/)
   - import the collection from `docs/money-tracker-bruno.json`
 - [Database](docs/database/db.dbml)
-- [API Endpoints](docs/api-endpoints.md)
+- [API Endpoints](docs/api.md)
 
 ## Technology Stack
 
