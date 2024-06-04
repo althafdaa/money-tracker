@@ -11,9 +11,12 @@ import (
 	"money-tracker/internal/modules/category/subcategory"
 	refreshtoken "money-tracker/internal/modules/refresh_token"
 	"money-tracker/internal/modules/transaction"
+
 	"money-tracker/internal/modules/user"
-	"money-tracker/internal/router"
+
 	"money-tracker/internal/utils"
+
+	"money-tracker/internal/router"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
