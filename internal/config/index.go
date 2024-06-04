@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"money-tracker/internal/domain"
 	"money-tracker/internal/dto"
@@ -46,6 +47,11 @@ func (a *config) ParseAccessTokenToUserData(code string) (*dto.GoogleUserData, *
 
 // ParseGoogleUserData implements Config.
 func (a *config) parseGoogleUserData(token string) (*dto.GoogleUserData, *domain.Error) {
+	if token == "" {
+		return nil, &domain.Error{
+			Err:  errors.New("TOKEN_IS_EMPTY"),
+			Code: fiber.StatusBadRequest}
+	}
 	resp, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token)
 	if err != nil {
 		return nil, &domain.Error{
@@ -74,6 +80,12 @@ func (a *config) parseGoogleUserData(token string) (*dto.GoogleUserData, *domain
 
 // Exchange implements Config.
 func (a *config) exchange(code string) (*oauth2.Token, *domain.Error) {
+	if code == "" {
+		return nil, &domain.Error{
+			Err:  errors.New("CODE_IS_EMPTY"),
+			Code: fiber.StatusBadRequest,
+		}
+	}
 	token, err := a.googleOauthConfig().Exchange(context.Background(), code)
 	if err != nil {
 		return nil, &domain.Error{

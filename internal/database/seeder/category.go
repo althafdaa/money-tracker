@@ -15,7 +15,8 @@ type Category struct {
 }
 
 type Seeder struct {
-	db *gorm.DB
+	db    *gorm.DB
+	utils utils.Utils
 }
 
 func (s *Seeder) seedCategory() error {
@@ -32,7 +33,7 @@ func (s *Seeder) seedCategory() error {
 
 	println("START_SEEDING_CATEGORY")
 	for _, category := range categories {
-		slug, err := utils.Slugify(category.Name)
+		slug, err := s.utils.Slugify(category.Name)
 		if err != nil {
 			println(err)
 			return err
@@ -76,6 +77,7 @@ func NewSeeder(
 	println("ENV SEED: ", is_seeding)
 
 	return &Seeder{
-		db: db,
+		db:    db,
+		utils: utils.NewUtils(),
 	}
 }
