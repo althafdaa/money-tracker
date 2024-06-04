@@ -1,5 +1,4 @@
 ## Build
-
 FROM golang:1.21.10-alpine as build
 WORKDIR /app
 COPY . .

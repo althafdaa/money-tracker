@@ -16,7 +16,16 @@ Golang API Application to track money transactions
 - Docker
 - Fiber
 - GORM
+- wire
 - Google Cloud Build and Cloud Run
+
+## Modules
+
+- [x] Auth
+- [x] User
+- [x] Transaction
+- [x] Category
+- [x] Subcategory
 
 ## Development
 
@@ -71,3 +80,7 @@ clean up binary from the last build
 ```bash
 make clean
 ```
+
+## Dev's Note
+
+My first finished golang project, it's as simple as it gets, but I'm proud of it. I've learned a lot about the language and the ecosystem. I'm looking forward to working on more projects with Go.
